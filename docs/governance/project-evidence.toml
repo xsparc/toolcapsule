@@ -76,7 +76,7 @@ risk_refs = ["docs/security.md"]
 [[work_items]]
 id = "TC003-MCP-ADAPTER"
 title = "Expose portable CLI and MCP interfaces"
-status = "active"
+status = "closed"
 evidence_refs = ["tests/cli.rs"]
 requirement_ids = ["REQ-MCP-ADAPTER"]
 roadmap_refs = ["docs/roadmap.md"]

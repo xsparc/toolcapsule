@@ -15,7 +15,8 @@ def check(root, as_of=None):
         reviewed = dt.date.fromisoformat(data["review"]["last_reviewed"])
         due = dt.date.fromisoformat(data["review"]["review_due"])
         assert due >= reviewed
-        if as_of and not reviewed <= as_of <= due:
+        # Maintainer calendar dates may be one day ahead of a UTC CI runner.
+        if as_of and (reviewed > as_of + dt.timedelta(days=1) or as_of > due):
             findings.append({"severity": "warn", "code": "review.freshness"})
         ids = set()
         for group in ("objectives", "requirements", "work_items"):
