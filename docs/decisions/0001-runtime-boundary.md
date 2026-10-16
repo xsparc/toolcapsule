@@ -10,8 +10,9 @@ embed and distribute than a network service and avoids premature microservices.
 WASI 0.3 is stable according to [WASI releases](https://wasi.dev/releases).
 Toolchain coverage still favors 0.2; 0.3 is a deliberate future ABI addition.
 Wasmtime's [resource controls](https://docs.wasmtime.dev/api/wasmtime/struct.Config.html)
-provide fuel and epoch interruption. A host async timeout is also required for
-blocked WASI calls, where epoch interruption alone cannot cancel a host future.
+provide deterministic fuel and cooperative async yields. Pair those yields with
+a Tokio deadline around instantiation and execution, including blocked WASI
+host futures. This avoids a shared epoch ticker and its cross-request coupling.
 The [MCP stdio transport](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports)
 provides local client interoperability without an exposed HTTP endpoint.
 

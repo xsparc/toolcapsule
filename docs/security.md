@@ -12,8 +12,11 @@ cryptographic entropy service. Guest output can contain prompt injection and
 must remain untrusted data in consuming agents.
 
 Fuel, linear-memory, table, instance, input/output and wall-time controls reduce
-guest abuse. Wasmtime/compiler vulnerabilities and host process compromise are
-outside this boundary. Compilation is not constrained by execution fuel or
+guest abuse. Each invocation permits one linear memory, four
+tables of at most 10,000 elements each, 32 core instances, and 256 WASI resource
+handles. Stdout and stderr each have the declared output byte limit.
+Wasmtime/compiler vulnerabilities and host compromise are outside this boundary.
+Compilation is not constrained by execution fuel or
 deadline. Run untrusted publishers in separately resource-limited worker
 processes. OS sandboxing and per-tenant worker admission are deployment duties.
 

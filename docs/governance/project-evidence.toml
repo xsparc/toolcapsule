@@ -42,7 +42,10 @@ evidence_refs = ["tests/package.rs"]
 [[requirements]]
 id = "REQ-WASI-RUNTIME"
 statement = "Run constrained components with replay"
-status = "planned"
+status = "implemented"
+implementation_refs = ["src/runtime.rs", "src/audit.rs"]
+verification_refs = ["tests/runtime.rs"]
+validation_refs = ["docs/development.md", "docs/governance/verification.md"]
 objective_ids = ["OBJ-SAFE-TOOLS"]
 roadmap_refs = ["docs/roadmap.md"]
 design_refs = ["docs/decisions/0001-runtime-boundary.md"]
@@ -51,7 +54,8 @@ risk_refs = ["docs/security.md"]
 [[work_items]]
 id = "TC002-WASI-RUNTIME"
 title = "Run constrained components with replay"
-status = "planned"
+status = "closed"
+evidence_refs = ["tests/runtime.rs"]
 requirement_ids = ["REQ-WASI-RUNTIME"]
 roadmap_refs = ["docs/roadmap.md"]
 approval_ref = "conversation:2026-10-17-public-toolcapsule-mvp-three-prs"

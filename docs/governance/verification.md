@@ -10,6 +10,11 @@ Run `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, and
 `python scripts/check_governance.py --as-of 2026-10-17 --strict`.
 
 TC001 validation on 2026-10-17: five package tests, formatting, Clippy, and the
-project static and strict governance gates passed. Runtime, CLI, and cross-platform
-validation are pending subsequent slices. No performance benchmark, independent
+project static and strict governance gates passed.
+
+TC002 validation on 2026-10-17: all ten package/runtime tests passed, including
+real WASI host-denial, blocked timer cancellation, fuel/memory exhaustion, fresh
+state, and tampered replay evidence. Formatting, Clippy, and both governance
+gates passed. Local execution was on Windows x64. CLI and cross-platform
+validation are pending the final slice. No performance benchmark, independent
 security review, hosted SaaS integration, or WASI 0.3 conformance is claimed.
