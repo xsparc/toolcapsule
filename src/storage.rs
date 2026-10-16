@@ -16,7 +16,7 @@ pub fn read_bounded(mut reader: impl Read, max: usize) -> Result<Vec<u8>, Error>
     let mut bytes = Vec::new();
     reader
         .by_ref()
-        .take(max as u64 + 1)
+        .take(max.checked_add(1).ok_or(Error::Policy)? as u64)
         .read_to_end(&mut bytes)
         .map_err(|_| Error::Io)?;
     if bytes.len() > max {
@@ -92,7 +92,7 @@ pub fn verify_log(bytes: &[u8]) -> Result<(u64, String), Error> {
 pub fn read_frame(reader: &mut impl BufRead, max: usize) -> Result<Option<Vec<u8>>, Error> {
     let mut frame = Vec::new();
     reader
-        .take(max as u64 + 1)
+        .take(max.checked_add(1).ok_or(Error::Policy)? as u64)
         .read_until(b'\n', &mut frame)
         .map_err(|_| Error::Io)?;
     if frame.len() > max {

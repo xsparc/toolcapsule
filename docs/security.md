@@ -31,5 +31,11 @@ Logs are not signed or externally anchored. Raw replay inputs are caller-owned
 sensitive data; they are not stored in the default audit record. Tool names and
 signer IDs are public package metadata. Logs can still reveal usage patterns.
 
+Clock readings are fixed, but WASI timer subscriptions still use the host async
+scheduler. Timer readiness and execution deadlines are not a virtual-time trace.
+Timing-sensitive guests may fail replay even after a successful original run;
+the verifier reports a mismatch. Guaranteed replay across host scheduling or
+runtime versions is not claimed. Prefer pure transformations without timer races.
+
 Report security concerns through GitHub private vulnerability reporting when
 enabled; otherwise open an issue without exploit details or secrets.

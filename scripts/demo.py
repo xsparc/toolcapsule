@@ -15,8 +15,9 @@ binary = root / "target/debug" / ("toolcapsule.exe" if __import__("os").name == 
 
 
 def run(*args, input=None):
-    result = subprocess.run([str(binary), *args], cwd=demo, input=input,
-                            text=True, capture_output=True, check=True)
+    result = subprocess.run([str(binary), *args], cwd=demo,
+                            input=None if input is None else input.encode("utf-8"),
+                            capture_output=True, check=True)
     return json.loads(result.stdout) if result.stdout else None
 
 

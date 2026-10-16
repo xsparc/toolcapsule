@@ -190,6 +190,8 @@ fn mcp_lifecycle_calls_errors_and_notifications_over_real_stdio() {
 
 #[test]
 fn framing_rejects_oversize_and_truncated_messages() {
+    assert!(toolcapsule::storage::read_bounded(std::io::empty(), usize::MAX).is_err());
+    assert!(read_frame(&mut std::io::Cursor::new(b""), usize::MAX).is_err());
     let mut reader = std::io::Cursor::new(b"123456\n");
     assert!(read_frame(&mut reader, 4).is_err());
     assert!(read_frame(&mut std::io::Cursor::new(b"{}"), 4).is_err());

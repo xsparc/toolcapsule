@@ -90,6 +90,8 @@ tenant-aware sink or the provided locked JSONL writer. The local writer verifies
 the existing chain and caps each file at 8 MiB; rotate files and retain trusted
 checkpoints outside the worker. Replay verifies successful runs against the
 same engine profile, exact package, input, seed, fuel, and output digests.
+Timer readiness still follows host scheduling; timing-sensitive tools can fail
+replay. This is verified re-execution, not an external-event recording system.
 
 Authentication, queue admission, concurrency quotas, total process memory, JIT
 compilation limits, and durable audit storage belong to the integrating service.
