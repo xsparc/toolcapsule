@@ -1,0 +1,6 @@
+/target/
+/.local/
+/.agents/
+*.key
+*.pem
+__pycache__/
