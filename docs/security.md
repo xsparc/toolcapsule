@@ -5,6 +5,11 @@ A valid signature identifies an operator-trusted publisher; it does not make a
 component safe. Trust configuration is supplied separately from the package.
 Policy defaults deny every tool. Manifest fields cannot grant host authority.
 
+The development key generator writes an unencrypted seed. Unix files are created
+with mode 0600; Windows files inherit directory ACLs. Use a protected directory
+and external signing/key management for operational publishers. Runtime workers
+only need the public trust store. Key IDs and trust-store updates are operator-owned.
+
 No filesystem preopens, environment inheritance, host stdio inheritance,
 network permission, secrets, or subprocess APIs are supplied to guests. Inputs
 and outputs are bounded. Fixed clocks and seeded random are fixtures, not a

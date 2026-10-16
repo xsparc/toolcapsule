@@ -32,6 +32,10 @@ integration point for SaaS queue workers. A worker may reuse prepared code while
 creating fresh state for each invocation. No global mutable tenant trust store,
 disk cache, or implicit package download exists.
 
+Prepared tools capture a trust/policy snapshot. The service must replace prepared
+instances after revoking a signer or changing tenant policy; no background trust
+refresh occurs in the execution library.
+
 SaaS integrators must authenticate callers before selecting tenant-specific
 trust and policy, bound queue length and parallelism, isolate workers in OS
 processes/containers, and export audit records to durable tenant-specific

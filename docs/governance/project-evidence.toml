@@ -64,7 +64,10 @@ acceptance_refs = ["docs/governance/verification.md"]
 [[requirements]]
 id = "REQ-MCP-ADAPTER"
 statement = "Expose portable CLI and MCP interfaces"
-status = "planned"
+status = "implemented"
+implementation_refs = ["src/main.rs", "src/mcp.rs", "src/storage.rs"]
+verification_refs = ["tests/cli.rs", ".github/workflows/ci.yml"]
+validation_refs = ["README.md", "docs/governance/verification.md"]
 objective_ids = ["OBJ-SAFE-TOOLS"]
 roadmap_refs = ["docs/roadmap.md"]
 design_refs = ["docs/decisions/0001-runtime-boundary.md"]
@@ -73,7 +76,8 @@ risk_refs = ["docs/security.md"]
 [[work_items]]
 id = "TC003-MCP-ADAPTER"
 title = "Expose portable CLI and MCP interfaces"
-status = "planned"
+status = "active"
+evidence_refs = ["tests/cli.rs"]
 requirement_ids = ["REQ-MCP-ADAPTER"]
 roadmap_refs = ["docs/roadmap.md"]
 approval_ref = "conversation:2026-10-17-public-toolcapsule-mvp-three-prs"

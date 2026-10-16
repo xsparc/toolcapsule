@@ -58,9 +58,12 @@ def check(root, as_of=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--as-of", type=dt.date.fromisoformat)
+    dates = parser.add_mutually_exclusive_group()
+    dates.add_argument("--as-of", type=dt.date.fromisoformat)
+    dates.add_argument("--today", action="store_true", help="check freshness using the current UTC date")
     parser.add_argument("--strict", action="store_true")
     args = parser.parse_args()
-    result = check(Path(__file__).resolve().parents[1], args.as_of)
+    as_of = dt.datetime.now(dt.timezone.utc).date() if args.today else args.as_of
+    result = check(Path(__file__).resolve().parents[1], as_of)
     print(json.dumps(result, indent=2))
     raise SystemExit(0 if result["status"] == "pass" or (result["status"] == "warn" and not args.strict) else 1)

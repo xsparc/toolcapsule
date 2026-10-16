@@ -16,5 +16,14 @@ TC002 validation on 2026-10-17: all ten package/runtime tests passed, including
 real WASI host-denial, blocked timer cancellation, fuel/memory exhaustion, fresh
 state, and tampered replay evidence. Formatting, Clippy, and both governance
 gates passed. Local execution was on Windows x64. CLI and cross-platform
-validation are pending the final slice. No performance benchmark, independent
+validation are covered by the final slice below. No performance benchmark, independent
 security review, hosted SaaS integration, or WASI 0.3 conformance is claimed.
+
+TC003 local validation on 2026-10-17: all 15 tests passed. Real CLI subprocesses
+cover key generation without overwrite, signing, digest rejection, execution,
+replay, audit verification, corrupted log rejection, and MCP lifecycle/errors.
+Formatting and Clippy with warnings denied passed. The documented demo printed
+the expected uppercase text and matched its replay. Cargo audit checked the
+locked dependencies against RustSec with no reported advisories. Static and
+strict governance checks passed. Hosted Windows/Linux/macOS CI is configured;
+its current results are attached to PR #3 rather than inferred from local tests.
