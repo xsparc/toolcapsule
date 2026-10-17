@@ -244,6 +244,8 @@ fn mcp_errors_omit_unknown_ids_and_preserve_known_ids() {
             .unwrap(),
         );
         input.push('\n');
+        input.push_str(&serde_json::to_string(&json!({"jsonrpc": "2.0", "id": id})).unwrap());
+        input.push('\n');
     }
     input.push_str("{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}\n");
     let mut args = package("mcp");
@@ -259,7 +261,7 @@ fn mcp_errors_omit_unknown_ids_and_preserve_known_ids() {
         .lines()
         .map(|line| serde_json::from_str(line).unwrap())
         .collect();
-    assert_eq!(replies.len(), 9);
+    assert_eq!(replies.len(), 11);
     assert_eq!(replies[0]["error"]["code"], -32700);
     for reply in &replies[..7] {
         assert!(
@@ -269,10 +271,14 @@ fn mcp_errors_omit_unknown_ids_and_preserve_known_ids() {
         assert!(reply.get("error").is_some());
         assert!(reply.get("result").is_none());
     }
-    assert_eq!(replies[7]["id"], 0);
-    assert_eq!(replies[8]["id"], "request-1");
-    for reply in &replies[7..] {
-        assert_eq!(reply["error"]["code"], -32602);
+    for (reply, id, code) in [
+        (&replies[7], json!(0), -32602),
+        (&replies[8], json!(0), -32600),
+        (&replies[9], json!("request-1"), -32602),
+        (&replies[10], json!("request-1"), -32600),
+    ] {
+        assert_eq!(reply["id"], id);
+        assert_eq!(reply["error"]["code"], code);
     }
     assert!(!dir.path().join("audit.jsonl").exists());
 }

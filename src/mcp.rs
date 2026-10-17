@@ -67,7 +67,7 @@ impl Server {
                 .as_ref()
                 .is_some_and(|id| !(id.is_string() || id.is_i64() || id.is_u64()))
         {
-            return Some(error(Value::Null, -32600, "Invalid request"));
+            return Some(error(id.unwrap_or(Value::Null), -32600, "Invalid request"));
         }
         let method = method.unwrap();
         let params = object.get("params").cloned().unwrap_or_else(|| json!({}));

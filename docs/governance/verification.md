@@ -37,6 +37,8 @@ permits an omitted error-response ID but does not permit null. Acceptance requir
 real stdio coverage for parse errors and invalid IDs, preservation of known IDs,
 no response or tool execution for a valid notification, the existing suite, and
 both governance gates. The new regression failed on baseline 5ee0fc8 as expected.
+Extended coverage also reproduced lost valid IDs on malformed requests at
+f82c02a; validation failures now preserve a valid ID while omitting invalid IDs.
 Post-fix validation on 2026-10-17: all 16 tests passed, formatting and Clippy
 with warnings denied passed, and static/current-date strict governance checks
 passed. The refreshed locked-dependency RustSec audit reported no advisories.
