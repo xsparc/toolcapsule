@@ -222,3 +222,57 @@ fn truncated_or_tampered_audits_are_rejected() {
     std::fs::write(dir.path().join("audit.jsonl"), text).unwrap();
     assert!(!call(dir.path(), &args, b"hello").status.success());
 }
+
+#[test]
+fn mcp_errors_omit_unknown_ids_and_preserve_known_ids() {
+    let dir = setup();
+    let mut input = String::from("{broken\n[]\n");
+    for id in [Value::Null, json!(true), json!({}), json!([]), json!(1.5)] {
+        input.push_str(
+            &serde_json::to_string(&json!({
+                "jsonrpc": "2.0", "id": id, "method": "ping"
+            }))
+            .unwrap(),
+        );
+        input.push('\n');
+    }
+    for id in [json!(0), json!("request-1")] {
+        input.push_str(
+            &serde_json::to_string(&json!({
+                "jsonrpc": "2.0", "id": id, "method": "ping", "params": []
+            }))
+            .unwrap(),
+        );
+        input.push('\n');
+    }
+    input.push_str("{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}\n");
+    let mut args = package("mcp");
+    args.extend(["--audit", "audit.jsonl"]);
+    let output = call(dir.path(), &args, input.as_bytes());
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let replies: Vec<Value> = String::from_utf8(output.stdout)
+        .unwrap()
+        .lines()
+        .map(|line| serde_json::from_str(line).unwrap())
+        .collect();
+    assert_eq!(replies.len(), 9);
+    assert_eq!(replies[0]["error"]["code"], -32700);
+    for reply in &replies[..7] {
+        assert!(
+            reply.get("id").is_none(),
+            "unknown request ID must be omitted: {reply}"
+        );
+        assert!(reply.get("error").is_some());
+        assert!(reply.get("result").is_none());
+    }
+    assert_eq!(replies[7]["id"], 0);
+    assert_eq!(replies[8]["id"], "request-1");
+    for reply in &replies[7..] {
+        assert_eq!(reply["error"]["code"], -32602);
+    }
+    assert!(!dir.path().join("audit.jsonl").exists());
+}

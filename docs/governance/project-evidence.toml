@@ -82,3 +82,13 @@ requirement_ids = ["REQ-MCP-ADAPTER"]
 roadmap_refs = ["docs/roadmap.md"]
 approval_ref = "conversation:2026-10-17-public-toolcapsule-mvp-three-prs"
 acceptance_refs = ["docs/governance/verification.md"]
+
+[[work_items]]
+id = "TC004-MCP-ERROR-RESPONSES"
+title = "Preserve MCP error-response schema compatibility and current governance instructions"
+status = "closed"
+requirement_ids = ["REQ-MCP-ADAPTER"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-10-17-opensteward-bounded-pr-corrections"
+acceptance_refs = ["docs/governance/verification.md"]
+evidence_refs = ["tests/cli.rs", "src/mcp.rs", "docs/development.md"]

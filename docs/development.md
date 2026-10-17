@@ -10,7 +10,7 @@ rustc --edition 2024 --target wasm32-wasip2 -O examples/guest.rs -o target/fixtu
 cargo fmt --check
 cargo clippy --all-targets --locked -- -D warnings
 cargo test --locked
-python scripts/check_governance.py --as-of 2026-10-17 --strict
+python scripts/check_governance.py --today --strict
 ```
 
 PowerShell users can replace the mkdir command with

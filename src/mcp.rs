@@ -25,7 +25,12 @@ pub struct Server {
 }
 
 fn error(id: Value, code: i32, message: &str) -> Value {
-    json!({"jsonrpc":"2.0", "id":id, "error":{"code":code,"message":message}})
+    let mut response = json!({"jsonrpc":"2.0", "error":{"code":code,"message":message}});
+    // MCP error responses omit the ID when no valid request ID is available.
+    if id.is_string() || id.is_i64() || id.is_u64() {
+        response["id"] = id;
+    }
+    response
 }
 
 fn tool_error(message: &str) -> Value {
