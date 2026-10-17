@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "baseline_commit": "7b8586c",
+  "scanned_at": "2026-10-17",
+  "coverage": [
+    "WASI standards and toolchain compatibility",
+    "Wasmtime resource controls and current stable release",
+    "MCP interoperability",
+    "sandbox and supply-chain reliability"
+  ],
+  "findings": [
+    {
+      "finding": "WASI 0.3 is stable; most other toolchains still target 0.2.",
+      "source_event_date": null,
+      "citations": [
+        "https://wasi.dev/releases"
+      ],
+      "confidence": "high",
+      "relevance": "portable guest ABI",
+      "direction_alignment": "aligned",
+      "opportunity_or_risk": "Avoid coupling the MVP to immature language tooling.",
+      "engineering_cost": "medium",
+      "disposition": "adopt",
+      "roadmap_delta": "Start with versioned 0.2 command ABI; plan explicit 0.3 adapter.",
+      "verification_needed": "Compile and run real Rust wasip2 fixtures."
+    },
+    {
+      "finding": "Wasmtime fuel is deterministic; epoch interruption needs a separately advancing engine epoch.",
+      "source_event_date": null,
+      "citations": [
+        "https://docs.wasmtime.dev/api/wasmtime/struct.Config.html"
+      ],
+      "confidence": "high",
+      "relevance": "resource budgets",
+      "direction_alignment": "aligned",
+      "opportunity_or_risk": "Host waits and compilation need additional limits.",
+      "engineering_cost": "medium",
+      "disposition": "adopt",
+      "roadmap_delta": "Fuel, store limits and async deadlines; external compilation limits documented.",
+      "verification_needed": "Fuel, memory, blocked wait and wall-time tests."
+    },
+    {
+      "finding": "MCP stdio carries newline-delimited JSON-RPC and reserves stdout for protocol traffic.",
+      "source_event_date": "2025-11-25",
+      "citations": [
+        "https://modelcontextprotocol.io/specification/2025-11-25/basic/transports"
+      ],
+      "confidence": "high",
+      "relevance": "agent interoperability",
+      "direction_alignment": "aligned",
+      "opportunity_or_risk": "Protocol errors and tool errors have different semantics.",
+      "engineering_cost": "medium",
+      "disposition": "adopt",
+      "roadmap_delta": "Thin stdio adapter with bounded request framing.",
+      "verification_needed": "Lifecycle, tools/list, tools/call and malformed input tests."
+    }
+  ],
+  "overall_recommendation": "Build a narrowly capability-secure deterministic profile, with independent tenant policy and reusable prepared components.",
+  "evidence_gaps": [
+    "No independent security assessment or workload benchmark.",
+    "WASI 0.3 async conformance and SaaS network deployment deferred.",
+    "Research dispositions are advisory inputs to the authorized initial architecture."
+  ]
+}

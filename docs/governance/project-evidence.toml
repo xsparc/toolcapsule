@@ -1,0 +1,76 @@
+schema_version = 1
+project = "toolcapsule"
+research_decisions = []
+
+[authority]
+source_priority = ["docs/architecture.md", "docs/roadmap.md", "docs/decisions/", "code-and-tests", "supporting-documentation"]
+dhf_is_authoritative = false
+
+[review]
+last_reviewed = "2026-10-17"
+review_due = "2026-11-17"
+
+[[objectives]]
+id = "OBJ-SAFE-TOOLS"
+statement = "Run portable AI-agent tools within explicit host authority and auditable budgets."
+status = "active"
+source_refs = ["docs/architecture.md"]
+validation_refs = ["docs/governance/verification.md"]
+
+[[requirements]]
+id = "REQ-PACKAGE-TRUST"
+statement = "Verify signed packages and host admission"
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0001-runtime-boundary.md"]
+risk_refs = ["docs/security.md"]
+implementation_refs = ["src/package.rs"]
+verification_refs = ["tests/package.rs"]
+validation_refs = ["docs/governance/verification.md"]
+
+[[work_items]]
+id = "TC001-PACKAGE-TRUST"
+title = "Verify signed packages and host admission"
+status = "closed"
+requirement_ids = ["REQ-PACKAGE-TRUST"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-10-17-public-toolcapsule-mvp-three-prs"
+acceptance_refs = ["docs/governance/verification.md"]
+evidence_refs = ["tests/package.rs"]
+
+[[requirements]]
+id = "REQ-WASI-RUNTIME"
+statement = "Run constrained components with replay"
+status = "planned"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0001-runtime-boundary.md"]
+risk_refs = ["docs/security.md"]
+
+[[work_items]]
+id = "TC002-WASI-RUNTIME"
+title = "Run constrained components with replay"
+status = "planned"
+requirement_ids = ["REQ-WASI-RUNTIME"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-10-17-public-toolcapsule-mvp-three-prs"
+acceptance_refs = ["docs/governance/verification.md"]
+
+[[requirements]]
+id = "REQ-MCP-ADAPTER"
+statement = "Expose portable CLI and MCP interfaces"
+status = "planned"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0001-runtime-boundary.md"]
+risk_refs = ["docs/security.md"]
+
+[[work_items]]
+id = "TC003-MCP-ADAPTER"
+title = "Expose portable CLI and MCP interfaces"
+status = "planned"
+requirement_ids = ["REQ-MCP-ADAPTER"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-10-17-public-toolcapsule-mvp-three-prs"
+acceptance_refs = ["docs/governance/verification.md"]

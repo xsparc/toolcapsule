@@ -1,0 +1,23 @@
+[package]
+name = "toolcapsule"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.96"
+license = "MIT"
+description = "Capability-secure WASI component execution for AI-agent tools"
+repository = "https://github.com/xsparc/toolcapsule"
+
+[dependencies]
+base64 = "0.22"
+ed25519-dalek = "2.2"
+hex = "0.4"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+thiserror = "2"
+
+[profile.dev]
+debug = 0
+
+[profile.test]
+debug = 0
