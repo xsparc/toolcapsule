@@ -15,7 +15,8 @@ def check(root, as_of=None):
         reviewed = dt.date.fromisoformat(data["review"]["last_reviewed"])
         due = dt.date.fromisoformat(data["review"]["review_due"])
         assert due >= reviewed
-        if as_of and not reviewed <= as_of <= due:
+        # Maintainer calendar dates may be one day ahead of a UTC CI runner.
+        if as_of and (reviewed > as_of + dt.timedelta(days=1) or as_of > due):
             findings.append({"severity": "warn", "code": "review.freshness"})
         ids = set()
         for group in ("objectives", "requirements", "work_items"):
@@ -58,9 +59,12 @@ def check(root, as_of=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--as-of", type=dt.date.fromisoformat)
+    dates = parser.add_mutually_exclusive_group()
+    dates.add_argument("--as-of", type=dt.date.fromisoformat)
+    dates.add_argument("--today", action="store_true", help="check freshness using the current UTC date")
     parser.add_argument("--strict", action="store_true")
     args = parser.parse_args()
-    result = check(Path(__file__).resolve().parents[1], args.as_of)
+    as_of = dt.datetime.now(dt.timezone.utc).date() if args.today else args.as_of
+    result = check(Path(__file__).resolve().parents[1], as_of)
     print(json.dumps(result, indent=2))
     raise SystemExit(0 if result["status"] == "pass" or (result["status"] == "warn" and not args.strict) else 1)

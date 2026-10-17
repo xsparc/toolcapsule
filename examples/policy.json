@@ -1,0 +1,11 @@
+{
+  "max_limits": {
+    "fuel": 10000000,
+    "memory_bytes": 67108864,
+    "timeout_ms": 1000,
+    "input_bytes": 65536,
+    "output_bytes": 65536
+  },
+  "max_component_bytes": 16777216,
+  "allowed_tools": ["uppercase"]
+}

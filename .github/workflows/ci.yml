@@ -1,0 +1,40 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
+        with:
+          toolchain: '1.97.1'
+          targets: wasm32-wasip2
+          components: rustfmt, clippy
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.13'
+      - name: Build real WASI fixture
+        shell: bash
+        run: |
+          mkdir -p target/fixtures
+          rustc --edition 2024 --target wasm32-wasip2 -O examples/guest.rs -o target/fixtures/guest.wasm
+      - run: cargo fmt --check
+      - run: cargo clippy --all-targets --locked -- -D warnings
+      - run: cargo test --locked
+      - name: Governance
+        run: python scripts/check_governance.py --today --strict
