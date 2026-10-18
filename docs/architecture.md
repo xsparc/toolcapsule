@@ -56,3 +56,5 @@ Only source Wasm components are accepted; native serialized code is never
 deserialized. Prepared code reuse avoids repeated compilation; guest state is
 never reused. Engine upgrades require replay-profile changes and regression
 tests. Performance claims require measured workloads; no throughput SLA is set.
+The synthetic benchmark in docs/benchmark.md measures verification, preparation
+and fresh-state invocation separately, without changing the runtime profile.

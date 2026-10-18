@@ -10,11 +10,14 @@ rustc --edition 2024 --target wasm32-wasip2 -O examples/guest.rs -o target/fixtu
 cargo fmt --check
 cargo clippy --all-targets --locked -- -D warnings
 cargo test --locked
+cargo test --locked --example benchmark
 python scripts/check_governance.py --today --strict
 ```
 
 PowerShell users can replace the mkdir command with
 `New-Item -ItemType Directory -Force target/fixtures`.
+
+See [execution measurements](benchmark.md) for the bounded JSON benchmark.
 
 Runtime tests exercise synthetic WAT components and a real Rust WASI command.
 The guest attempts filesystem, environment, TCP, UDP, and subprocess access,

@@ -9,6 +9,12 @@ main contains only repository metadata. PRs remain open pending maintainer revie
 | TC002 | Constrained WASI runtime and replay | Real component execution, denied I/O, resource exhaustion, fresh state, audit and replay tests |
 | TC003 | CLI, MCP, examples and CI | End-to-end signing/execution/replay; MCP lifecycle and error tests; portable CI |
 
+## Next milestone: TC005 execution measurements
+
+The 2026-10-18 request delegates research, next-scope selection, delivery and a
+draft PR. ADR 0002 selects a bounded prepared-execution benchmark with separate
+phase timings and fixture correctness checks. TC004 was the MCP correction.
+
 Later work requires a bounded accepted scope: WASI 0.3 async ABI; brokered
 read-only filesystem and domain-restricted HTTP; external secret handles;
 tenant authentication and quotas; signed registry distribution; independent
