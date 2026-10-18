@@ -1,5 +1,9 @@
 # Design history
 
+2026-10-18: delegated next-scope research selects TC005, a bounded synthetic
+preparation/reuse benchmark. ADR 0002 preserves runtime and replay behavior.
+See benchmark-direction.md and benchmark-validation.md for rationale and evidence.
+
 This index is derived evidence, not a source of permission. Architecture,
 roadmap, and ADRs define the intended design; code and tests demonstrate it.
 

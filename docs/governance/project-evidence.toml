@@ -1,14 +1,13 @@
 schema_version = 1
 project = "toolcapsule"
-research_decisions = []
 
 [authority]
 source_priority = ["docs/architecture.md", "docs/roadmap.md", "docs/decisions/", "code-and-tests", "supporting-documentation"]
 dhf_is_authoritative = false
 
 [review]
-last_reviewed = "2026-10-17"
-review_due = "2026-11-17"
+last_reviewed = "2026-10-18"
+review_due = "2026-11-18"
 
 [[objectives]]
 id = "OBJ-SAFE-TOOLS"
@@ -92,3 +91,31 @@ roadmap_refs = ["docs/roadmap.md"]
 approval_ref = "conversation:2026-10-17-opensteward-bounded-pr-corrections"
 acceptance_refs = ["docs/governance/verification.md"]
 evidence_refs = ["tests/cli.rs", "src/mcp.rs", "docs/development.md"]
+
+[[research_decisions]]
+id = "RD-EXECUTION-MEASUREMENT"
+disposition = "adopted"
+source_refs = ["docs/governance/benchmark-direction.md"]
+design_refs = ["docs/decisions/0002-execution-measurement.md"]
+
+[[requirements]]
+id = "REQ-EXECUTION-MEASUREMENT"
+statement = "Measure verified preparation and fresh-state reuse with a bounded synthetic fixture."
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0002-execution-measurement.md"]
+risk_refs = ["docs/security.md", "docs/benchmark.md"]
+implementation_refs = ["examples/benchmark.rs"]
+verification_refs = ["examples/benchmark.rs", ".github/workflows/ci.yml"]
+validation_refs = ["docs/governance/benchmark-validation.md"]
+
+[[work_items]]
+id = "TC005-EXECUTION-MEASUREMENT"
+title = "Measure preparation and fresh-state invocation"
+status = "closed"
+requirement_ids = ["REQ-EXECUTION-MEASUREMENT"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-10-18-research-select-next-scopes-and-draft-prs"
+acceptance_refs = ["docs/decisions/0002-execution-measurement.md"]
+evidence_refs = ["examples/benchmark.rs", "docs/governance/benchmark-validation.md"]
