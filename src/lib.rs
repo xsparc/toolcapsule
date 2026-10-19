@@ -1,5 +1,6 @@
 //! Signed, deny-by-default tool packages. No ambient host authority.
 pub mod audit;
+pub mod batch;
 pub mod mcp;
 pub mod package;
 pub mod runtime;

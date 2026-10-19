@@ -1,7 +1,13 @@
 # Roadmap
 
-The initial authorized delivery is bounded to three dependent PRs. Bootstrap
-main contains only repository metadata. PRs remain open pending maintainer review.
+## TC007: bounded batch execution
+
+The 2026-10-19 next-milestone request continues delegated scope selection and draft
+delivery. ADR 0003 adds ordered batches with count/concurrency/byte admission,
+fresh guest state and owned cancellation. See docs/batch.md for integration limits.
+
+The initial delivery used three dependent PRs, now merged. Bootstrap main
+contained repository metadata; subsequent approved slices are recorded below.
 
 | Slice | Outcome | Acceptance |
 | --- | --- | --- |
