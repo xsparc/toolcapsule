@@ -17,7 +17,7 @@ sha2 = "0.10"
 thiserror = "2"
 clap = { version = "4", features = ["derive"] }
 getrandom = "0.4"
-tokio = { version = "1", features = ["rt", "time", "macros"] }
+tokio = { version = "1", features = ["rt", "time", "macros", "sync"] }
 wasmtime = { version = "=49.0.3", default-features = false, features = ["std", "runtime", "cranelift", "component-model", "async"] }
 wasmtime-wasi = { version = "=49.0.3", default-features = false, features = ["p2"] }
 

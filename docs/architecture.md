@@ -26,6 +26,11 @@ cryptography. Packages must opt into this profile in their signed manifest.
 
 ## Interoperability and scaling
 
+An optional shared `ExecutionPool` applies a process-local ceiling across tools and
+batches. Its clones share nonblocking admission and reject overload with Busy.
+Batch tasks retain reservations through cancellation cleanup. See ADR 0004 and
+docs/pool.md; authentication and process memory limits remain external.
+
 The bounded batch API reuses one prepared object with at most 16 active invocations
 and returns ordered results for up to 64 inputs. Aggregate input and retained-output
 admission precedes execution. Limits are per batch, not global quotas; external

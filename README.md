@@ -1,5 +1,7 @@
 # ToolCapsule
 
+Worker integrations can share [execution admission](docs/pool.md) across callers.
+
 Run AI-agent tools as signed WebAssembly components with explicit capabilities,
 resource budgets, audit receipts, and deterministic replay. Use the Rust library,
 CLI, or MCP stdio adapter. MIT licensed; no hosted service is required.

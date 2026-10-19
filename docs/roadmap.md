@@ -1,5 +1,11 @@
 # Roadmap
 
+## TC008: shared execution admission
+
+Delegated research/scope selection continues after TC007's merge. ADR 0004 adds
+one cloneable, fail-fast pool across callers with atomic batch-window admission
+and cancellation-safe reservation ownership. See docs/pool.md.
+
 ## TC007: bounded batch execution
 
 The 2026-10-19 next-milestone request continues delegated scope selection and draft
