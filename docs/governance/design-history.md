@@ -19,3 +19,9 @@ The installed OpenSteward governance checker requires its own project identity.
 ToolCapsule uses a repository-local stdlib-only structural/freshness checker
 against its own evidence registry. This adaptation does not claim the upstream
 OpenSteward checker passed.
+
+2026-10-19: TC006 requires structural validation to run under normal and
+optimized Python execution. Explicit conditional guards preserve the existing
+sanitized failure categories; optimization must not bypass schema, path or
+traceability checks. Freshness remains optional for the static check and is
+enforced by the dated strict gate.

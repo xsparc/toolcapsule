@@ -39,5 +39,7 @@ jobs:
       - run: cargo test --locked --example benchmark
       - name: Benchmark correctness smoke (not a performance gate)
         run: cargo run --locked --example benchmark -- target/fixtures/guest.wasm --samples 1 --warmup 0
+      - name: Governance regression tests
+        run: python -B -m unittest discover -s scripts -p test_governance.py
       - name: Governance
         run: python scripts/check_governance.py --today --strict

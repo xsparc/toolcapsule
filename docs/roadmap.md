@@ -24,3 +24,11 @@ deferred until an independently isolated broker exists.
 Ongoing stewardship reviews dependency/security changes, CI failures, open PRs,
 and user needs. It produces proposals and bounded reviewable changes. It never
 authorizes merges, deployment, releases, paid services, or contacting people.
+
+## TC006: governance validation under optimization
+
+A bounded maintenance correction keeps evidence checks active with Python -O
+and -OO. Acceptance covers valid evidence, malformed metadata, missing or
+escaping references, broken traceability, deferred-work rationale and freshness.
+Synthetic CLI regressions run in the existing platform matrix. The runtime,
+capability policy, guest ABI and replay profile are unchanged.
