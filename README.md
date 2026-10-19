@@ -45,6 +45,9 @@ toolcapsule audit-verify --audit audit.jsonl
 Keep signing keys separate from runtime workers. The public trust store maps a
 key ID to its Ed25519 public key; obtain it through an operator-trusted channel.
 The [example policy](examples/policy.json) explicitly allows only `uppercase`.
+
+Embedding multiple invocations? The [bounded batch API](docs/batch.md) reuses one
+prepared tool with ordered results, byte/concurrency limits and cancellation.
 The Rust API permits custom signed limits; `pack` uses the default profile:
 10 million fuel, 64 MiB guest memory, one second, 64 KiB input, and 64 KiB each
 for stdout and stderr. Exceeding host policy is rejected, never silently clamped.

@@ -26,6 +26,11 @@ cryptography. Packages must opt into this profile in their signed manifest.
 
 ## Interoperability and scaling
 
+The bounded batch API reuses one prepared object with at most 16 active invocations
+and returns ordered results for up to 64 inputs. Aggregate input and retained-output
+admission precedes execution. Limits are per batch, not global quotas; external
+worker memory limits remain necessary. See docs/batch.md and ADR 0003.
+
 JSON contracts are versioned and language-neutral. MCP stdio exposes verified
 tools to agent clients without embedding an agent framework. The library is the
 integration point for SaaS queue workers. A worker may reuse prepared code while

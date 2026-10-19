@@ -141,3 +141,31 @@ roadmap_refs = ["docs/roadmap.md"]
 approval_ref = "conversation:2026-10-19-opensteward-small-maintenance-review"
 acceptance_refs = ["docs/governance/governance-validation.md"]
 evidence_refs = ["scripts/check_governance.py", "scripts/test_governance.py"]
+
+[[research_decisions]]
+id = "RD-BOUNDED-BATCHES"
+disposition = "adopted"
+source_refs = ["docs/governance/batch-direction.md"]
+design_refs = ["docs/decisions/0003-bounded-batches.md"]
+
+[[requirements]]
+id = "REQ-BOUNDED-BATCHES"
+statement = "Execute admitted batches with bounded concurrency, fresh guest state and ordered results."
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0003-bounded-batches.md"]
+risk_refs = ["docs/security.md", "docs/batch.md"]
+implementation_refs = ["src/batch.rs", "examples/batch.rs"]
+verification_refs = ["src/batch.rs", "tests/runtime.rs"]
+validation_refs = ["docs/governance/batch-validation.md"]
+
+[[work_items]]
+id = "TC007-BOUNDED-BATCHES"
+title = "Bounded prepared-tool invocation batches"
+status = "closed"
+requirement_ids = ["REQ-BOUNDED-BATCHES"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-10-19-next-milestone-and-draft-prs"
+acceptance_refs = ["docs/decisions/0003-bounded-batches.md"]
+evidence_refs = ["src/batch.rs", "tests/runtime.rs", "docs/governance/batch-validation.md"]

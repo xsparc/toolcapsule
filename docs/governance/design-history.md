@@ -1,5 +1,10 @@
 # Design history
 
+2026-10-19, TC007: the next-milestone request continues delegated scope selection.
+ADR 0003 adds a bounded batch API over one prepared trust/policy snapshot. Fresh
+guest state, ordered outcomes and owned cancellation preserve the existing runtime
+boundary. See batch-direction.md and batch-validation.md.
+
 2026-10-18: delegated next-scope research selects TC005, a bounded synthetic
 preparation/reuse benchmark. ADR 0002 preserves runtime and replay behavior.
 See benchmark-direction.md and benchmark-validation.md for rationale and evidence.

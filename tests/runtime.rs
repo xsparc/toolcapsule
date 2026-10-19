@@ -1,4 +1,6 @@
 use ed25519_dalek::SigningKey;
+use std::sync::Arc;
+use toolcapsule::batch::{Invocation, run_batch};
 use toolcapsule::{
     audit::{AuditEntry, Receipt},
     package::digest,
@@ -46,6 +48,164 @@ fn command(body: &str, memory: &str) -> Vec<u8> {
       (export "wasi:cli/run@0.2.0" (instance $cli)))"#
     ))
     .unwrap()
+}
+
+#[tokio::test]
+async fn batch_real_guest_preserves_order_outcomes_and_replay() {
+    let tool = Arc::new(tool(
+        std::fs::read("target/fixtures/guest.wasm").unwrap(),
+        Limits {
+            timeout_ms: 50,
+            ..Limits::default()
+        },
+    ));
+    let inputs: Vec<Vec<u8>> = vec![
+        b"sleep".to_vec(),
+        b"hello\n".to_vec(),
+        b"fail".to_vec(),
+        b"probe".to_vec(),
+    ];
+    let jobs = inputs
+        .iter()
+        .enumerate()
+        .map(|(i, input)| Invocation {
+            input: input.clone(),
+            seed: i as u64,
+        })
+        .collect();
+    let results = run_batch(tool.clone(), jobs, 4).await.unwrap();
+    assert_eq!(results[0].outcome, Outcome::TimeLimit);
+    assert_eq!(results[1].stdout, b"HELLO\n");
+    assert_eq!(results[2].outcome, Outcome::GuestError);
+    assert_eq!(results[3].stdout, b"capabilities-denied\n");
+    Receipt::new(&tool, &inputs[1], 1, &results[1])
+        .replay(&tool, &inputs[1])
+        .await
+        .unwrap();
+    assert_eq!(Arc::strong_count(&tool), 1);
+}
+
+#[tokio::test]
+async fn batch_admission_rejects_counts_bytes_and_overflow() {
+    let tool = Arc::new(tool(command("i32.const 0", ""), Limits::default()));
+    assert!(run_batch(tool.clone(), vec![], 1).await.unwrap().is_empty());
+    for concurrency in [0, 17] {
+        assert!(matches!(
+            run_batch(tool.clone(), vec![], concurrency).await,
+            Err(Error::Policy)
+        ));
+    }
+    let jobs = (0..65)
+        .map(|_| Invocation {
+            input: vec![],
+            seed: 0,
+        })
+        .collect();
+    assert!(matches!(
+        run_batch(tool.clone(), jobs, 1).await,
+        Err(Error::Policy)
+    ));
+    assert!(matches!(
+        run_batch(
+            tool,
+            vec![Invocation {
+                input: vec![0; 65537],
+                seed: 0
+            }],
+            1
+        )
+        .await,
+        Err(Error::InputLimit)
+    ));
+    let large = Arc::new(self::tool(
+        command("i32.const 0", ""),
+        Limits {
+            input_bytes: 5 * 1024 * 1024,
+            ..Limits::default()
+        },
+    ));
+    assert!(matches!(
+        run_batch(
+            large,
+            vec![Invocation {
+                input: vec![0; 4 * 1024 * 1024 + 1],
+                seed: 0
+            }],
+            1
+        )
+        .await,
+        Err(Error::Policy)
+    ));
+    let huge = Arc::new(self::tool(
+        command("i32.const 0", ""),
+        Limits {
+            output_bytes: usize::MAX,
+            ..Limits::default()
+        },
+    ));
+    assert!(matches!(
+        run_batch(
+            huge,
+            vec![Invocation {
+                input: vec![],
+                seed: 0
+            }],
+            1
+        )
+        .await,
+        Err(Error::Policy)
+    ));
+}
+
+#[tokio::test]
+async fn concurrent_batch_instances_have_fresh_globals() {
+    let bytes = command(
+        "global.get 0 global.get 0 i32.const 1 i32.add global.set 0",
+        "(global (mut i32) (i32.const 0))",
+    );
+    let tool = Arc::new(tool(bytes, Limits::default()));
+    let jobs = (0..64)
+        .map(|seed| Invocation {
+            input: vec![],
+            seed,
+        })
+        .collect();
+    let results = run_batch(tool, jobs, 16).await.unwrap();
+    assert_eq!(results.len(), 64);
+    assert!(results.iter().all(|r| r.outcome == Outcome::Success));
+}
+
+#[tokio::test]
+async fn batch_cancellation_releases_real_guest_tasks() {
+    let tool = Arc::new(tool(
+        std::fs::read("target/fixtures/guest.wasm").unwrap(),
+        Limits {
+            timeout_ms: 5000,
+            ..Limits::default()
+        },
+    ));
+    let jobs = (0..8)
+        .map(|seed| Invocation {
+            input: b"sleep".to_vec(),
+            seed,
+        })
+        .collect();
+    assert!(
+        tokio::time::timeout(
+            std::time::Duration::from_millis(30),
+            run_batch(tool.clone(), jobs, 2)
+        )
+        .await
+        .is_err()
+    );
+    for _ in 0..5 {
+        tokio::task::yield_now().await;
+    }
+    assert_eq!(Arc::strong_count(&tool), 1);
+    assert_eq!(
+        tool.run(b"still usable", 1).await.unwrap().stdout,
+        b"STILL USABLE"
+    );
 }
 
 #[tokio::test]
