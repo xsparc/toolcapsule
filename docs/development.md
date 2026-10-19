@@ -11,6 +11,7 @@ cargo fmt --check
 cargo clippy --all-targets --locked -- -D warnings
 cargo test --locked
 cargo test --locked --example benchmark
+python -B -m unittest discover -s scripts -p test_governance.py
 python scripts/check_governance.py --today --strict
 ```
 

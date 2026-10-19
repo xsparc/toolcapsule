@@ -6,8 +6,8 @@ source_priority = ["docs/architecture.md", "docs/roadmap.md", "docs/decisions/",
 dhf_is_authoritative = false
 
 [review]
-last_reviewed = "2026-10-18"
-review_due = "2026-11-18"
+last_reviewed = "2026-10-19"
+review_due = "2026-11-19"
 
 [[objectives]]
 id = "OBJ-SAFE-TOOLS"
@@ -119,3 +119,25 @@ roadmap_refs = ["docs/roadmap.md"]
 approval_ref = "conversation:2026-10-18-research-select-next-scopes-and-draft-prs"
 acceptance_refs = ["docs/decisions/0002-execution-measurement.md"]
 evidence_refs = ["examples/benchmark.rs", "docs/governance/benchmark-validation.md"]
+
+[[requirements]]
+id = "REQ-GOVERNANCE-VALIDATION"
+statement = "Reject invalid governance evidence in normal and optimized Python execution."
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/governance/design-history.md"]
+risk_refs = ["docs/governance/governance-validation.md"]
+implementation_refs = ["scripts/check_governance.py"]
+verification_refs = ["scripts/test_governance.py", ".github/workflows/ci.yml"]
+validation_refs = ["docs/governance/governance-validation.md"]
+
+[[work_items]]
+id = "TC006-GOVERNANCE-VALIDATION"
+title = "Keep governance validation active under Python optimization"
+status = "closed"
+requirement_ids = ["REQ-GOVERNANCE-VALIDATION"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-10-19-opensteward-small-maintenance-review"
+acceptance_refs = ["docs/governance/governance-validation.md"]
+evidence_refs = ["scripts/check_governance.py", "scripts/test_governance.py"]
