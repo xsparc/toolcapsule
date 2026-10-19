@@ -29,15 +29,28 @@ pub async fn run_batch(
     invocations: Vec<Invocation>,
     concurrency: usize,
 ) -> Result<Vec<RunResult>, Error> {
+    validate(&tool, &invocations, concurrency)?;
+    schedule(invocations, concurrency, move |invocation| {
+        let tool = Arc::clone(&tool);
+        async move { tool.run(&invocation.input, invocation.seed).await }
+    })
+    .await
+}
+
+pub(crate) fn validate(
+    tool: &PreparedTool,
+    invocations: &[Invocation],
+    concurrency: usize,
+) -> Result<(), Error> {
     if invocations.len() > MAX_INVOCATIONS || !(1..=MAX_CONCURRENCY).contains(&concurrency) {
         return Err(Error::Policy);
     }
     if invocations.is_empty() {
-        return Ok(vec![]);
+        return Ok(());
     }
     let limits = &tool.manifest().limits;
     let mut input_bytes = 0usize;
-    for invocation in &invocations {
+    for invocation in invocations {
         if invocation.input.len() > limits.input_bytes {
             return Err(Error::InputLimit);
         }
@@ -53,14 +66,10 @@ pub async fn run_batch(
     if input_bytes > MAX_INPUT_BYTES || output_bytes > MAX_OUTPUT_BYTES {
         return Err(Error::Policy);
     }
-    schedule(invocations, concurrency, move |invocation| {
-        let tool = Arc::clone(&tool);
-        async move { tool.run(&invocation.input, invocation.seed).await }
-    })
-    .await
+    Ok(())
 }
 
-async fn schedule<T, F, Fut>(
+pub(crate) async fn schedule<T, F, Fut>(
     items: Vec<T>,
     concurrency: usize,
     operation: F,

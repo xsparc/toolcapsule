@@ -3,6 +3,7 @@ pub mod audit;
 pub mod batch;
 pub mod mcp;
 pub mod package;
+pub mod pool;
 pub mod runtime;
 pub mod storage;
 

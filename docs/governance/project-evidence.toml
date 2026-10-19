@@ -1,6 +1,34 @@
 schema_version = 1
 project = "toolcapsule"
 
+[[research_decisions]]
+id = "RD-SHARED-ADMISSION"
+disposition = "adopted"
+source_refs = ["docs/governance/pool-direction.md"]
+design_refs = ["docs/decisions/0004-shared-execution-admission.md"]
+
+[[requirements]]
+id = "REQ-SHARED-ADMISSION"
+statement = "Share fail-fast invocation admission across callers and retain reservations through task cleanup."
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0004-shared-execution-admission.md"]
+risk_refs = ["docs/pool.md"]
+implementation_refs = ["src/pool.rs", "src/batch.rs"]
+verification_refs = ["src/pool.rs", "tests/runtime.rs"]
+validation_refs = ["docs/governance/pool-validation.md"]
+
+[[work_items]]
+id = "TC008-SHARED-ADMISSION"
+title = "Shared fail-fast execution pool"
+status = "closed"
+requirement_ids = ["REQ-SHARED-ADMISSION"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-10-19-research-select-next-milestones-and-draft-prs"
+acceptance_refs = ["docs/decisions/0004-shared-execution-admission.md"]
+evidence_refs = ["src/pool.rs", "tests/runtime.rs", "docs/governance/pool-validation.md"]
+
 [authority]
 source_priority = ["docs/architecture.md", "docs/roadmap.md", "docs/decisions/", "code-and-tests", "supporting-documentation"]
 dhf_is_authoritative = false

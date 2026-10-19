@@ -24,6 +24,8 @@ pub enum Error {
     Component,
     #[error("runtime unavailable")]
     Runtime,
+    #[error("execution pool is at capacity")]
+    Busy,
     #[error("replay differs from the recorded execution")]
     Replay,
     #[error("invalid or inconsistent audit chain")]

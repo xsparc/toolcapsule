@@ -51,6 +51,150 @@ fn command(body: &str, memory: &str) -> Vec<u8> {
 }
 
 #[tokio::test]
+async fn pool_shares_capacity_and_releases_only_after_batch_cleanup() {
+    use toolcapsule::pool::ExecutionPool;
+    let tool = Arc::new(tool(
+        std::fs::read("target/fixtures/guest.wasm").unwrap(),
+        Limits::default(),
+    ));
+    let pool = ExecutionPool::new(2).unwrap();
+    let clone = pool.clone();
+    let mut batch = Box::pin(
+        pool.run_batch(
+            tool.clone(),
+            (0..8)
+                .map(|seed| Invocation {
+                    input: b"sleep".to_vec(),
+                    seed,
+                })
+                .collect(),
+            2,
+        ),
+    );
+    tokio::select! {
+        _ = &mut batch => panic!("sleeping batch unexpectedly completed"),
+        _ = tokio::time::sleep(std::time::Duration::from_millis(20)) => {}
+    }
+    assert!(matches!(
+        clone.run(&tool, b"hello", 0).await,
+        Err(Error::Busy)
+    ));
+    assert!(matches!(
+        clone
+            .run_batch(
+                tool.clone(),
+                vec![Invocation {
+                    input: vec![],
+                    seed: 0
+                }],
+                1
+            )
+            .await,
+        Err(Error::Busy)
+    ));
+    drop(batch);
+    // Aborted tasks still own their reservation until the executor drops them.
+    assert!(matches!(
+        clone.run(&tool, b"hello", 0).await,
+        Err(Error::Busy)
+    ));
+    for _ in 0..10 {
+        tokio::task::yield_now().await;
+    }
+    assert_eq!(
+        clone.run(&tool, b"hello", 0).await.unwrap().stdout,
+        b"HELLO"
+    );
+}
+
+#[tokio::test]
+async fn pool_cancelled_batches_release_capacity_for_reuse_and_replay() {
+    use toolcapsule::pool::ExecutionPool;
+    let tool = Arc::new(tool(
+        std::fs::read("target/fixtures/guest.wasm").unwrap(),
+        Limits::default(),
+    ));
+    let pool = ExecutionPool::new(2).unwrap();
+    assert!(
+        tokio::time::timeout(
+            std::time::Duration::from_millis(20),
+            pool.run_batch(
+                tool.clone(),
+                (0..8)
+                    .map(|seed| Invocation {
+                        input: b"sleep".to_vec(),
+                        seed
+                    })
+                    .collect(),
+                2
+            )
+        )
+        .await
+        .is_err()
+    );
+    for _ in 0..10 {
+        tokio::task::yield_now().await;
+    }
+    let result = pool.run(&tool, b"hello\n", 9).await.unwrap();
+    assert_eq!(result.stdout, b"HELLO\n");
+    Receipt::new(&tool, b"hello\n", 9, &result)
+        .replay(&tool, b"hello\n")
+        .await
+        .unwrap();
+    assert_eq!(Arc::strong_count(&tool), 1);
+    assert!(
+        pool.run_batch(tool.clone(), vec![], 1)
+            .await
+            .unwrap()
+            .is_empty()
+    );
+    assert!(matches!(
+        pool.run_batch(
+            tool.clone(),
+            vec![Invocation {
+                input: vec![],
+                seed: 0
+            }],
+            0
+        )
+        .await,
+        Err(Error::Policy)
+    ));
+    assert!(matches!(
+        pool.run(&tool, &vec![0; 65537], 0).await,
+        Err(Error::InputLimit)
+    ));
+    assert!(matches!(
+        pool.run_batch(
+            tool.clone(),
+            (0..3)
+                .map(|seed| Invocation {
+                    input: vec![],
+                    seed
+                })
+                .collect(),
+            3
+        )
+        .await,
+        Err(Error::Busy)
+    ));
+    let results = pool
+        .run_batch(
+            tool,
+            (0..3)
+                .map(|seed| Invocation {
+                    input: b"probe".to_vec(),
+                    seed,
+                })
+                .collect(),
+            2,
+        )
+        .await
+        .unwrap();
+    assert!(results.iter().all(|r| r.stdout == b"capabilities-denied\n"));
+}
+
+#[tokio::test]
 async fn batch_real_guest_preserves_order_outcomes_and_replay() {
     let tool = Arc::new(tool(
         std::fs::read("target/fixtures/guest.wasm").unwrap(),
