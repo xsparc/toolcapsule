@@ -71,6 +71,7 @@ struct Report {
     preparation: Timing,
     first_invocation: Timing,
     reused_invocation: Timing,
+    verified_cache_hit: Timing,
     fuel_consumed: u64,
 }
 
@@ -138,6 +139,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             reused.push(elapsed);
         }
     }
+    let mut cache = toolcapsule::cache::PreparationCache::new(1, bytes.len())?;
+    let cached = cache.prepare(&envelope, bytes.clone(), &trust, &policy)?;
+    let mut hits = vec![];
+    for i in 0..args.warmup + args.samples {
+        let start = Instant::now();
+        let hit = cache.prepare(&envelope, bytes.clone(), &trust, &policy)?;
+        let elapsed = start.elapsed().as_nanos();
+        if !std::sync::Arc::ptr_eq(&cached, &hit) {
+            return Err("cache did not reuse prepared code".into());
+        }
+        check(&hit.run(input, 42).await?, expected.as_ref())?;
+        if i >= args.warmup {
+            hits.push(elapsed);
+        }
+    }
     let report = Report {
         schema_version: 1,
         profile: PROFILE,
@@ -156,6 +172,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         preparation: summarize(preparation),
         first_invocation: summarize(first),
         reused_invocation: summarize(reused),
+        verified_cache_hit: summarize(hits),
         fuel_consumed: expected.expect("positive samples").fuel_consumed,
     };
     println!("{}", serde_json::to_string_pretty(&report)?);

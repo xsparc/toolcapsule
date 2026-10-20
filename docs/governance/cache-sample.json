@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "profile": "toolcapsule-v1-wasmtime-49.0.3-wasip2-fixed-clock-cycle-rng",
+  "build_mode": "release",
+  "component_sha256": "4da35753575e3b08aad2bc2a9b19b4879d5da49cc666c04f0dfe0f76fe06c50a",
+  "component_bytes": 2840199,
+  "input_bytes": 10,
+  "seed": 42,
+  "warmup": 3,
+  "engine_setup_ns": 69800,
+  "verification_with_copy": {
+    "samples": 10,
+    "min_ns": 1463300,
+    "median_ns": 1486600,
+    "p95_ns": 1710900,
+    "max_ns": 1710900,
+    "total_ns": 15113000
+  },
+  "preparation": {
+    "samples": 10,
+    "min_ns": 182203100,
+    "median_ns": 185288200,
+    "p95_ns": 188375500,
+    "max_ns": 188375500,
+    "total_ns": 1856810600
+  },
+  "first_invocation": {
+    "samples": 10,
+    "min_ns": 118200,
+    "median_ns": 136100,
+    "p95_ns": 244200,
+    "max_ns": 244200,
+    "total_ns": 1455500
+  },
+  "reused_invocation": {
+    "samples": 10,
+    "min_ns": 78400,
+    "median_ns": 116800,
+    "p95_ns": 234200,
+    "max_ns": 234200,
+    "total_ns": 1213600
+  },
+  "verified_cache_hit": {
+    "samples": 10,
+    "min_ns": 1473000,
+    "median_ns": 1491800,
+    "p95_ns": 2244200,
+    "max_ns": 2244200,
+    "total_ns": 16362300
+  },
+  "fuel_consumed": 26292
+}

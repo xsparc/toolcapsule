@@ -197,3 +197,31 @@ roadmap_refs = ["docs/roadmap.md"]
 approval_ref = "conversation:2026-10-19-next-milestone-and-draft-prs"
 acceptance_refs = ["docs/decisions/0003-bounded-batches.md"]
 evidence_refs = ["src/batch.rs", "tests/runtime.rs", "docs/governance/batch-validation.md"]
+
+[[research_decisions]]
+id = "RD-VERIFIED-CACHE"
+disposition = "adopted"
+source_refs = ["docs/governance/cache-direction.md"]
+design_refs = ["docs/decisions/0005-verified-preparation-cache.md"]
+
+[[requirements]]
+id = "REQ-VERIFIED-CACHE"
+statement = "Reuse bounded prepared code only after current package authority is verified."
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0005-verified-preparation-cache.md"]
+risk_refs = ["docs/cache.md"]
+implementation_refs = ["src/cache.rs"]
+verification_refs = ["tests/cache.rs", "examples/benchmark.rs"]
+validation_refs = ["docs/governance/cache-validation.md", "docs/governance/cache-sample.json"]
+
+[[work_items]]
+id = "TC009-VERIFIED-CACHE"
+title = "Bounded verified preparation cache"
+status = "closed"
+requirement_ids = ["REQ-VERIFIED-CACHE"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-10-20-research-select-next-milestones-and-draft-prs"
+acceptance_refs = ["docs/decisions/0005-verified-preparation-cache.md"]
+evidence_refs = ["tests/cache.rs", "docs/governance/cache-validation.md"]
