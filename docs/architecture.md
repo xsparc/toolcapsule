@@ -61,6 +61,11 @@ not claimed.
 
 ## Portability and performance
 
+ADR 0005 adds an optional process-local preparation LRU. Every lookup verifies
+the supplied package against current trust and policy before reuse. Entry and
+source-byte budgets bound cache-owned retention; JIT memory and external handles
+remain host responsibilities. See docs/cache.md.
+
 Rust and Wasmtime support Windows, Linux, and macOS. CI exercises all three.
 Only source Wasm components are accepted; native serialized code is never
 deserialized. Prepared code reuse avoids repeated compilation; guest state is

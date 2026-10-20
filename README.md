@@ -1,5 +1,7 @@
 # ToolCapsule
 
+Repeated package preparation can use the [verified cache](docs/cache.md).
+
 Worker integrations can share [execution admission](docs/pool.md) across callers.
 
 Run AI-agent tools as signed WebAssembly components with explicit capabilities,

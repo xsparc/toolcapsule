@@ -1,5 +1,11 @@
 # Roadmap
 
+## TC009: verified preparation cache
+
+After TC008's merge, delegated scope selection prioritizes measured preparation
+reuse. ADR 0005 defines bounded LRU retention with current authority checks on hits,
+fresh guest state and benchmark validation.
+
 ## TC008: shared execution admission
 
 Delegated research/scope selection continues after TC007's merge. ADR 0004 adds
