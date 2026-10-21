@@ -2,6 +2,7 @@
 pub mod audit;
 pub mod batch;
 pub mod cache;
+pub mod catalog;
 pub mod mcp;
 pub mod package;
 pub mod pool;

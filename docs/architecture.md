@@ -50,7 +50,7 @@ SaaS integrators must authenticate callers before selecting tenant-specific
 trust and policy, bound queue length and parallelism, isolate workers in OS
 processes/containers, and export audit records to durable tenant-specific
 storage. This MVP does not provide HTTP authentication, billing, remote package
-fetching, or a hosted control plane. One MCP process serves one configured tool.
+fetching, or a hosted control plane. An MCP process serves one configured tool or an explicit bounded catalog.
 Multiple stateless processes scale independently; no database is required.
 
 The component byte cap bounds intake, not JIT CPU/RSS. Fuel bounds guest
@@ -73,3 +73,10 @@ never reused. Engine upgrades require replay-profile changes and regression
 tests. Performance claims require measured workloads; no throughput SLA is set.
 The synthetic benchmark in docs/benchmark.md measures verification, preparation
 and fresh-state invocation separately, without changing the runtime profile.
+
+## Static MCP catalog
+
+ADR 0006 adds explicit 1..16-package catalogs with a shared authority snapshot,
+64 MiB aggregate source admission, lexical eight-tool pages and signed-name dispatch.
+All packages are verified before compilation or serving. Per-invocation state and
+receipt identity remain isolated. See [catalog setup](catalog.md).
