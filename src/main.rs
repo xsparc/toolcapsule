@@ -5,7 +5,7 @@ use std::{
     path::PathBuf,
 };
 use toolcapsule::{
-    audit::Receipt,
+    audit::{AuditCheckpoint, Receipt},
     mcp::{MAX_FRAME_BYTES, Server},
     package::{MAX_ENVELOPE_BYTES, digest},
     runtime::{Outcome, PreparedTool, Runtime},
@@ -85,6 +85,19 @@ enum Command {
     AuditVerify {
         #[arg(long)]
         audit: PathBuf,
+        /// Previously retained trusted checkpoint; require this prefix to remain intact.
+        #[arg(long)]
+        checkpoint: Option<PathBuf>,
+        /// Reject appended entries too. Requires --checkpoint.
+        #[arg(long, requires = "checkpoint")]
+        exact: bool,
+    },
+    /// Verify a log and write a new unsigned checkpoint for protected retention.
+    AuditCheckpoint {
+        #[arg(long)]
+        audit: PathBuf,
+        #[arg(long)]
+        out: PathBuf,
     },
 }
 
@@ -237,9 +250,28 @@ async fn execute(cli: Cli) -> Result<bool, Error> {
                 }
             }
         }
-        Command::AuditVerify { audit } => {
-            let (entries, checkpoint) = verify_log(&read_file(&audit, MAX_AUDIT_BYTES)?)?;
+        Command::AuditVerify {
+            audit,
+            checkpoint,
+            exact,
+        } => {
+            let bytes = read_file(&audit, MAX_AUDIT_BYTES)?;
+            let (entries, checkpoint) = match checkpoint {
+                Some(path) => {
+                    let anchor: AuditCheckpoint = read_json(&path, 4096)?;
+                    verify_log_against(&bytes, &anchor, exact)?
+                }
+                None => verify_log(&bytes)?,
+            };
             print_json(&serde_json::json!({"entries":entries,"checkpoint":checkpoint}))?;
+        }
+        Command::AuditCheckpoint { audit, out } => {
+            let checkpoint = checkpoint_log(&read_file(&audit, MAX_AUDIT_BYTES)?)?;
+            write_new(
+                &out,
+                &serde_json::to_vec_pretty(&checkpoint).map_err(|_| Error::Audit)?,
+            )?;
+            print_json(&checkpoint)?;
         }
     }
     Ok(true)

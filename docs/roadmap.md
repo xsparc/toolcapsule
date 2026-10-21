@@ -50,3 +50,10 @@ and -OO. Acceptance covers valid evidence, malformed metadata, missing or
 escaping references, broken traceability, deferred-work rationale and freshness.
 Synthetic CLI regressions run in the existing platform matrix. The runtime,
 capability policy, guest ABI and replay profile are unchanged.
+
+## TC011: trusted audit checkpoints
+
+The 2026-10-22 request continues delegated scope selection and draft delivery.
+ADR 0007 closes the retained-chain-head verification gap without depending on
+TC010's still-open catalog PR. Acceptance covers anchored prefix/exact verification,
+exclusive checkpoint export and valid rewrite/truncation rejection.

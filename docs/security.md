@@ -39,3 +39,8 @@ runtime versions is not claimed. Prefer pure transformations without timer races
 
 Report security concerns through GitHub private vulnerability reporting when
 enabled; otherwise open an issue without exploit details or secrets.
+
+The optional trusted-checkpoint verifier checks a supplied retained prefix and
+all subsequent entries. Checkpoints are unsigned; protect them independently.
+It does not detect removal after the anchor unless exact mode is used. See
+[audit checkpoints](audit-checkpoints.md) for empty-anchor and snapshot limits.

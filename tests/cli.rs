@@ -282,3 +282,70 @@ fn mcp_errors_omit_unknown_ids_and_preserve_known_ids() {
     }
     assert!(!dir.path().join("audit.jsonl").exists());
 }
+
+#[test]
+fn cli_checkpoint_export_and_trusted_verification() {
+    let dir = setup();
+    let mut run = package("run");
+    run.extend(["--audit", "audit.jsonl"]);
+    assert!(call(dir.path(), &run, b"first").status.success());
+    let export = [
+        "audit-checkpoint",
+        "--audit",
+        "audit.jsonl",
+        "--out",
+        "anchor.json",
+    ];
+    let output = call(dir.path(), &export, b"");
+    assert!(output.status.success());
+    let anchor = std::fs::read(dir.path().join("anchor.json")).unwrap();
+    assert_eq!(
+        serde_json::from_slice::<Value>(&output.stdout).unwrap(),
+        serde_json::from_slice::<Value>(&anchor).unwrap()
+    );
+    assert_eq!(call(dir.path(), &export, b"").status.code(), Some(2));
+    assert_eq!(
+        anchor,
+        std::fs::read(dir.path().join("anchor.json")).unwrap()
+    );
+    let verify = [
+        "audit-verify",
+        "--audit",
+        "audit.jsonl",
+        "--checkpoint",
+        "anchor.json",
+    ];
+    let mut exact = verify.to_vec();
+    exact.push("--exact");
+    assert!(call(dir.path(), &exact, b"").status.success());
+    assert!(call(dir.path(), &run, b"second").status.success());
+    assert!(call(dir.path(), &verify, b"").status.success());
+    assert_eq!(call(dir.path(), &exact, b"").status.code(), Some(2));
+    assert_eq!(
+        call(
+            dir.path(),
+            &["audit-verify", "--audit", "audit.jsonl", "--exact"],
+            b""
+        )
+        .status
+        .code(),
+        Some(2)
+    );
+    std::fs::write(dir.path().join("anchor.json"), vec![b' '; 4097]).unwrap();
+    assert_eq!(call(dir.path(), &verify, b"").status.code(), Some(2));
+    std::fs::write(dir.path().join("audit.jsonl"), b"broken\n").unwrap();
+    let output = call(
+        dir.path(),
+        &[
+            "audit-checkpoint",
+            "--audit",
+            "audit.jsonl",
+            "--out",
+            "bad.json",
+        ],
+        b"",
+    );
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    assert!(!dir.path().join("bad.json").exists());
+}

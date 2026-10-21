@@ -73,3 +73,9 @@ never reused. Engine upgrades require replay-profile changes and regression
 tests. Performance claims require measured workloads; no throughput SLA is set.
 The synthetic benchmark in docs/benchmark.md measures verification, preparation
 and fresh-state invocation separately, without changing the runtime profile.
+
+## Trusted audit checkpoints
+
+ADR 0007 adds explicit checkpoint export and retained-prefix verification over the
+existing chain encoding. Verification checks every entry and optionally requires
+an exact head. Checkpoint custody is external; see [audit checkpoints](audit-checkpoints.md).

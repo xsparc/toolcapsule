@@ -225,3 +225,31 @@ roadmap_refs = ["docs/roadmap.md"]
 approval_ref = "conversation:2026-10-20-research-select-next-milestones-and-draft-prs"
 acceptance_refs = ["docs/decisions/0005-verified-preparation-cache.md"]
 evidence_refs = ["tests/cache.rs", "docs/governance/cache-validation.md"]
+
+[[research_decisions]]
+id = "RD-AUDIT-CHECKPOINTS"
+disposition = "adopted"
+source_refs = ["docs/governance/checkpoint-direction.md"]
+design_refs = ["docs/decisions/0007-trusted-audit-checkpoints.md"]
+
+[[requirements]]
+id = "REQ-AUDIT-CHECKPOINTS"
+statement = "Trusted audit checkpoint verification with bounded inputs and explicit evidence identity."
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0007-trusted-audit-checkpoints.md"]
+risk_refs = ["docs/audit-checkpoints.md"]
+implementation_refs = ["src/audit.rs", "src/storage.rs", "src/main.rs"]
+verification_refs = ["tests/checkpoints.rs", "tests/cli.rs"]
+validation_refs = ["docs/governance/checkpoint-validation.md"]
+
+[[work_items]]
+id = "TC011-AUDIT-CHECKPOINTS"
+title = "Trusted audit checkpoint verification"
+status = "closed"
+requirement_ids = ["REQ-AUDIT-CHECKPOINTS"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-10-22-research-select-next-milestones-and-draft-prs"
+acceptance_refs = ["docs/decisions/0007-trusted-audit-checkpoints.md"]
+evidence_refs = ["tests/checkpoints.rs", "tests/cli.rs", "docs/governance/checkpoint-validation.md"]
