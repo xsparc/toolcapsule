@@ -225,3 +225,31 @@ roadmap_refs = ["docs/roadmap.md"]
 approval_ref = "conversation:2026-10-20-research-select-next-milestones-and-draft-prs"
 acceptance_refs = ["docs/decisions/0005-verified-preparation-cache.md"]
 evidence_refs = ["tests/cache.rs", "docs/governance/cache-validation.md"]
+
+[[research_decisions]]
+id = "RD-MCP-CATALOG"
+disposition = "adopted"
+source_refs = ["docs/governance/catalog-direction.md"]
+design_refs = ["docs/decisions/0006-mcp-tool-catalog.md"]
+
+[[requirements]]
+id = "REQ-MCP-CATALOG"
+statement = "Static MCP tool catalog with strict admission and reproducible identities."
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0006-mcp-tool-catalog.md"]
+risk_refs = ["docs/catalog.md"]
+implementation_refs = ["src/catalog.rs", "src/mcp.rs", "src/main.rs"]
+verification_refs = ["tests/catalog.rs", "tests/cli.rs"]
+validation_refs = ["docs/governance/catalog-validation.md"]
+
+[[work_items]]
+id = "TC010-MCP-CATALOG"
+title = "Static MCP tool catalog"
+status = "closed"
+requirement_ids = ["REQ-MCP-CATALOG"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-10-21-research-select-next-milestones-and-draft-prs"
+acceptance_refs = ["docs/decisions/0006-mcp-tool-catalog.md"]
+evidence_refs = ["tests/catalog.rs", "tests/cli.rs", "docs/governance/catalog-validation.md"]

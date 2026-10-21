@@ -81,6 +81,17 @@ enum Command {
         #[arg(long)]
         audit: PathBuf,
     },
+    /// Serve an explicit static catalog of verified tools over MCP stdio.
+    McpCatalog {
+        #[arg(long)]
+        catalog: PathBuf,
+        #[arg(long)]
+        trust: PathBuf,
+        #[arg(long)]
+        policy: PathBuf,
+        #[arg(long)]
+        audit: PathBuf,
+    },
     /// Validate an audit chain and print its entry count and checkpoint hash.
     AuditVerify {
         #[arg(long)]
@@ -229,13 +240,18 @@ async fn execute(cli: Cli) -> Result<bool, Error> {
             print_json(&serde_json::json!({"matched":true}))?;
         }
         Command::Mcp { package, audit } => {
-            let mut server = Server::new(package.prepare()?, audit);
-            let mut input = io::stdin().lock();
-            while let Some(frame) = read_frame(&mut input, MAX_FRAME_BYTES)? {
-                if let Some(response) = server.handle(&frame).await {
-                    print_json(&response)?;
-                }
-            }
+            serve(Server::new(package.prepare()?, audit)).await?;
+        }
+        Command::McpCatalog {
+            catalog,
+            trust,
+            policy,
+            audit,
+        } => {
+            let trust: TrustStore = read_json(&trust, 64 * 1024)?;
+            let policy: Policy = read_json(&policy, 64 * 1024)?;
+            let tools = catalog::prepare_catalog(&catalog, &trust, &policy)?;
+            serve(Server::with_tools(tools, audit)?).await?;
         }
         Command::AuditVerify { audit } => {
             let (entries, checkpoint) = verify_log(&read_file(&audit, MAX_AUDIT_BYTES)?)?;
@@ -243,4 +259,14 @@ async fn execute(cli: Cli) -> Result<bool, Error> {
         }
     }
     Ok(true)
+}
+
+async fn serve(mut server: Server) -> Result<(), Error> {
+    let mut input = io::stdin().lock();
+    while let Some(frame) = read_frame(&mut input, MAX_FRAME_BYTES)? {
+        if let Some(response) = server.handle(&frame).await {
+            print_json(&response)?;
+        }
+    }
+    Ok(())
 }

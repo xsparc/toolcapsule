@@ -50,3 +50,9 @@ and -OO. Acceptance covers valid evidence, malformed metadata, missing or
 escaping references, broken traceability, deferred-work rationale and freshness.
 Synthetic CLI regressions run in the existing platform matrix. The runtime,
 capability policy, guest ABI and replay profile are unchanged.
+
+## TC010: static MCP catalog
+
+After TC009's merge, delegated scope selection selects bounded multi-tool MCP
+integration. ADR 0006 defines complete startup admission, static pagination and
+signed-name routing. See docs/catalog.md and governance/catalog-validation.md.

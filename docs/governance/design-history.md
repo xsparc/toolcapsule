@@ -30,3 +30,7 @@ optimized Python execution. Explicit conditional guards preserve the existing
 sanitized failure categories; optimization must not bypass schema, path or
 traceability checks. Freshness remains optional for the static check and is
 enforced by the dated strict gate.
+
+2026-10-21: TC010 adds static mcp tool catalog under delegated next-scope selection.
+The bounded contract is in docs/decisions/0006-mcp-tool-catalog.md; executed checks and limits are in
+docs/governance/catalog-validation.md.

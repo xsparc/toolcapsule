@@ -1,11 +1,15 @@
-//! MCP 2025-11-25 stdio protocol, one admitted tool per server.
+//! MCP 2025-11-25 stdio protocol, a bounded static catalog of admitted tools.
 use crate::{
+    Error,
     audit::Receipt,
     runtime::{Outcome, PreparedTool},
     storage::append_audit,
 };
 use serde_json::{Value, json};
-use std::path::PathBuf;
+use std::{collections::BTreeMap, path::PathBuf};
+
+pub const MAX_TOOLS: usize = 16;
+const PAGE_SIZE: usize = 8;
 
 pub const PROTOCOL_VERSION: &str = "2025-11-25";
 pub const MAX_FRAME_BYTES: usize = 1024 * 1024;
@@ -19,7 +23,7 @@ enum Phase {
 }
 
 pub struct Server {
-    tool: PreparedTool,
+    tools: BTreeMap<String, PreparedTool>,
     phase: Phase,
     audit: PathBuf,
 }
@@ -40,10 +44,30 @@ fn tool_error(message: &str) -> Value {
 impl Server {
     pub fn new(tool: PreparedTool, audit: PathBuf) -> Self {
         Self {
-            tool,
+            tools: [(tool.manifest().name.clone(), tool)].into(),
             phase: Phase::New,
             audit,
         }
+    }
+
+    /// Admit a static catalog with unique signed names; serving never changes it.
+    pub fn with_tools(tools: Vec<PreparedTool>, audit: PathBuf) -> Result<Self, Error> {
+        if tools.is_empty() || tools.len() > MAX_TOOLS {
+            return Err(Error::Format);
+        }
+        let count = tools.len();
+        let tools: BTreeMap<_, _> = tools
+            .into_iter()
+            .map(|tool| (tool.manifest().name.clone(), tool))
+            .collect();
+        if tools.len() != count {
+            return Err(Error::Format);
+        }
+        Ok(Self {
+            tools,
+            phase: Phase::New,
+            audit,
+        })
     }
 
     /// Notifications never execute a tool and never receive a response.
@@ -110,19 +134,36 @@ impl Server {
                 return Some(error(id, -32000, "Server not initialized"));
             }
             "tools/list" => {
-                if params.get("cursor").is_some() {
-                    return Some(error(id, -32602, "Invalid cursor"));
-                }
-                json!({"tools":[{"name":self.tool.manifest().name,"description":self.tool.manifest().description,
+                let offset = match params.get("cursor") {
+                    None => 0,
+                    Some(Value::String(cursor))
+                        if cursor == "tools:8" && self.tools.len() > PAGE_SIZE =>
+                    {
+                        PAGE_SIZE
+                    }
+                    _ => return Some(error(id, -32602, "Invalid cursor")),
+                };
+                let descriptors: Vec<_> = self.tools.values().skip(offset).take(PAGE_SIZE).map(|tool| {
+                    json!({"name":tool.manifest().name,"description":tool.manifest().description,
                     "inputSchema":{"type":"object","properties":{"input":{"type":"string"},"seed":{"type":"integer","minimum":0,"maximum":9007199254740991_u64}},
                     "required":["input"],"additionalProperties":false},
-                    "annotations":{"readOnlyHint":true,"destructiveHint":false,"openWorldHint":false}}]})
+                    "annotations":{"readOnlyHint":true,"destructiveHint":false,"openWorldHint":false}})
+                }).collect();
+                let mut page = json!({"tools":descriptors});
+                if offset + PAGE_SIZE < self.tools.len() {
+                    page["nextCursor"] = json!("tools:8");
+                }
+                page
             }
             "tools/call" => {
-                if params.get("name").and_then(Value::as_str) != Some(&self.tool.manifest().name) {
+                let Some(tool) = params
+                    .get("name")
+                    .and_then(Value::as_str)
+                    .and_then(|name| self.tools.get(name))
+                else {
                     return Some(error(id, -32602, "Unknown tool"));
-                }
-                self.call(params.get("arguments").unwrap_or(&Value::Null))
+                };
+                self.call(tool, params.get("arguments").unwrap_or(&Value::Null))
                     .await
             }
             _ => return Some(error(id, -32601, "Method not found")),
@@ -130,7 +171,7 @@ impl Server {
         Some(json!({"jsonrpc":"2.0","id":id,"result":result}))
     }
 
-    async fn call(&self, args: &Value) -> Value {
+    async fn call(&self, tool: &PreparedTool, args: &Value) -> Value {
         let Some(object) = args.as_object() else {
             return tool_error("Expected tool arguments");
         };
@@ -147,11 +188,11 @@ impl Server {
                 None => return tool_error("seed must be a nonnegative safe integer"),
             },
         };
-        let result = match self.tool.run(input.as_bytes(), seed).await {
+        let result = match tool.run(input.as_bytes(), seed).await {
             Ok(result) => result,
             Err(error) => return tool_error(&error.to_string()),
         };
-        let receipt = Receipt::new(&self.tool, input.as_bytes(), seed, &result);
+        let receipt = Receipt::new(tool, input.as_bytes(), seed, &result);
         if append_audit(&self.audit, receipt).is_err() {
             return tool_error("Audit persistence failed");
         }
