@@ -6,6 +6,33 @@ use crate::{
 };
 use serde::{Deserialize, Serialize};
 
+/// An unsigned chain anchor. Its integrity must be protected outside the log.
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct AuditCheckpoint {
+    pub schema_version: u32,
+    pub entries: u64,
+    pub checkpoint: String,
+}
+
+impl AuditCheckpoint {
+    pub fn validate(&self) -> Result<(), Error> {
+        let valid_hash = if self.entries == 0 {
+            self.checkpoint.is_empty()
+        } else {
+            self.checkpoint.len() == 64
+                && self
+                    .checkpoint
+                    .bytes()
+                    .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+        };
+        if self.schema_version != 1 || !valid_hash {
+            return Err(Error::Audit);
+        }
+        Ok(())
+    }
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct Receipt {

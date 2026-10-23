@@ -30,3 +30,7 @@ optimized Python execution. Explicit conditional guards preserve the existing
 sanitized failure categories; optimization must not bypass schema, path or
 traceability checks. Freshness remains optional for the static check and is
 enforced by the dated strict gate.
+
+2026-10-22: TC011 adds trusted audit checkpoint verification under delegated scope selection.
+See docs/decisions/0007-trusted-audit-checkpoints.md for acceptance and
+docs/governance/checkpoint-validation.md for actual checks and limits.

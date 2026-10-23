@@ -1,7 +1,7 @@
 //! Bounded local I/O; callers choose paths, never guests or manifests.
 use crate::{
     Error,
-    audit::{AuditEntry, Receipt},
+    audit::{AuditCheckpoint, AuditEntry, Receipt},
 };
 use serde::de::DeserializeOwned;
 use std::{
@@ -74,6 +74,34 @@ pub fn append_audit(path: &Path, receipt: Receipt) -> Result<AuditEntry, Error> 
 }
 
 pub fn verify_log(bytes: &[u8]) -> Result<(u64, String), Error> {
+    verify_chain(bytes, None)
+}
+
+/// Verify every entry and require the trusted anchor to match an observed prefix.
+/// Exact mode additionally rejects valid suffix entries after that anchor.
+pub fn verify_log_against(
+    bytes: &[u8],
+    anchor: &AuditCheckpoint,
+    exact: bool,
+) -> Result<(u64, String), Error> {
+    anchor.validate()?;
+    let head = verify_chain(bytes, Some(anchor))?;
+    if exact && head.0 != anchor.entries {
+        return Err(Error::Audit);
+    }
+    Ok(head)
+}
+
+pub fn checkpoint_log(bytes: &[u8]) -> Result<AuditCheckpoint, Error> {
+    let (entries, checkpoint) = verify_log(bytes)?;
+    Ok(AuditCheckpoint {
+        schema_version: 1,
+        entries,
+        checkpoint,
+    })
+}
+
+fn verify_chain(bytes: &[u8], anchor: Option<&AuditCheckpoint>) -> Result<(u64, String), Error> {
     if bytes.len() > MAX_AUDIT_BYTES || (!bytes.is_empty() && !bytes.ends_with(b"\n")) {
         return Err(Error::Audit);
     }
@@ -84,6 +112,12 @@ pub fn verify_log(bytes: &[u8]) -> Result<(u64, String), Error> {
         entry.verify(sequence, &previous)?;
         previous = entry.hash;
         sequence += 1;
+        if anchor.is_some_and(|a| a.entries == sequence && a.checkpoint != previous) {
+            return Err(Error::Audit);
+        }
+    }
+    if anchor.is_some_and(|a| a.entries > sequence) {
+        return Err(Error::Audit);
     }
     Ok((sequence, previous))
 }

@@ -117,3 +117,5 @@ PR to `main` after its dependency lands.
 OpenSteward guides research, bounded implementation, and evidence maintenance.
 Development is agent-assisted. Future improvements require review; stewardship
 does not authorize merging, deployment, releases, or paid services.
+
+Retain protected chain heads with [audit checkpoints](docs/audit-checkpoints.md).
