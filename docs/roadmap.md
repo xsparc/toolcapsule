@@ -57,3 +57,9 @@ The 2026-10-22 request continues delegated scope selection and draft delivery.
 ADR 0007 closes the retained-chain-head verification gap without depending on
 TC010's still-open catalog PR. Acceptance covers anchored prefix/exact verification,
 exclusive checkpoint export and valid rewrite/truncation rejection.
+
+## TC012: Signed audit checkpoints
+
+The delegated 2026-10-23 scope continues the merged evidence milestone.
+Decision: `docs/decisions/0008-signed-audit-checkpoints.md`.
+Acceptance: Round-trip authentication, tampering and wrong-domain rejection, revocation, strict schema and size admission, CLI exclusive output, required trust and prefix/exact verification.

@@ -119,3 +119,6 @@ Development is agent-assisted. Future improvements require review; stewardship
 does not authorize merging, deployment, releases, or paid services.
 
 Retain protected chain heads with [audit checkpoints](docs/audit-checkpoints.md).
+
+Retained audit anchors can optionally be authenticated with a dedicated custodian
+key: see [signed checkpoint usage](docs/audit-checkpoints.md#authenticate-retained-checkpoints).

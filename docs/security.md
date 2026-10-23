@@ -44,3 +44,8 @@ The optional trusted-checkpoint verifier checks a supplied retained prefix and
 all subsequent entries. Checkpoints are unsigned; protect them independently.
 It does not detect removal after the anchor unless exact mode is used. See
 [audit checkpoints](audit-checkpoints.md) for empty-anchor and snapshot limits.
+
+Optional signed audit checkpoints authenticate retained anchors using a separately
+selected host trust store. Verification still requires independently retained
+freshness evidence; signatures do not prevent replay of older valid checkpoints.
+See [checkpoint custody](audit-checkpoints.md).

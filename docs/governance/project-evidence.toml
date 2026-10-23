@@ -253,3 +253,31 @@ roadmap_refs = ["docs/roadmap.md"]
 approval_ref = "conversation:2026-10-22-research-select-next-milestones-and-draft-prs"
 acceptance_refs = ["docs/decisions/0007-trusted-audit-checkpoints.md"]
 evidence_refs = ["tests/checkpoints.rs", "tests/cli.rs", "docs/governance/checkpoint-validation.md"]
+
+[[research_decisions]]
+id = "RD-SIGNED-CHECKPOINTS"
+disposition = "adopted"
+source_refs = ["docs/governance/signed-checkpoint-direction.md"]
+design_refs = ["docs/decisions/0008-signed-audit-checkpoints.md"]
+
+[[requirements]]
+id = "REQ-SIGNED-CHECKPOINTS"
+statement = "Signed audit checkpoints with bounded inputs and explicit evidence identity."
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0008-signed-audit-checkpoints.md"]
+risk_refs = ["docs/audit-checkpoints.md"]
+implementation_refs = ["src/checkpoint_signing.rs","src/main.rs"]
+verification_refs = ["tests/checkpoint_signing.rs","tests/cli.rs"]
+validation_refs = ["docs/governance/signed-checkpoint-validation.md"]
+
+[[work_items]]
+id = "TC012-SIGNED-CHECKPOINTS"
+title = "Signed audit checkpoints"
+status = "closed"
+requirement_ids = ["REQ-SIGNED-CHECKPOINTS"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-10-23-research-select-next-milestones-and-draft-prs"
+acceptance_refs = ["docs/decisions/0008-signed-audit-checkpoints.md"]
+evidence_refs = ["tests/checkpoint_signing.rs", "docs/governance/signed-checkpoint-validation.md"]
