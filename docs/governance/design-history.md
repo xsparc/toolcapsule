@@ -34,3 +34,8 @@ enforced by the dated strict gate.
 2026-10-22: TC011 adds trusted audit checkpoint verification under delegated scope selection.
 See docs/decisions/0007-trusted-audit-checkpoints.md for acceptance and
 docs/governance/checkpoint-validation.md for actual checks and limits.
+
+## 2026-10-23: TC012
+
+Signed audit checkpoints extends the merged evidence workflow. See the accepted decision at
+`docs/decisions/0008-signed-audit-checkpoints.md` and validation at `docs/governance/signed-checkpoint-validation.md`.

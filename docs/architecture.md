@@ -79,3 +79,8 @@ and fresh-state invocation separately, without changing the runtime profile.
 ADR 0007 adds explicit checkpoint export and retained-prefix verification over the
 existing chain encoding. Verification checks every entry and optionally requires
 an exact head. Checkpoint custody is external; see [audit checkpoints](audit-checkpoints.md).
+
+Checkpoint authentication is an optional evidence layer outside guest execution.
+The versioned signed envelope uses domain-separated Ed25519 over exact checkpoint
+JSON, host-selected public keys and bounded strict decoding. See
+[ADR 0008](decisions/0008-signed-audit-checkpoints.md).

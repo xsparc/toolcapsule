@@ -6,6 +6,7 @@ use std::{
 };
 use toolcapsule::{
     audit::{AuditCheckpoint, Receipt},
+    checkpoint_signing::{MAX_CHECKPOINT_BYTES, MAX_SIGNED_CHECKPOINT_BYTES, SignedCheckpoint},
     mcp::{MAX_FRAME_BYTES, Server},
     package::{MAX_ENVELOPE_BYTES, digest},
     runtime::{Outcome, PreparedTool, Runtime},
@@ -88,14 +89,30 @@ enum Command {
         /// Previously retained trusted checkpoint; require this prefix to remain intact.
         #[arg(long)]
         checkpoint: Option<PathBuf>,
-        /// Reject appended entries too. Requires --checkpoint.
-        #[arg(long, requires = "checkpoint")]
+        /// Reject appended entries too. Requires an unsigned or signed checkpoint.
+        #[arg(long)]
         exact: bool,
+        /// Authenticate a checkpoint with the explicitly supplied checkpoint trust store.
+        #[arg(long, conflicts_with = "checkpoint", requires = "trust")]
+        signed_checkpoint: Option<PathBuf>,
+        #[arg(long, requires = "signed_checkpoint")]
+        trust: Option<PathBuf>,
     },
     /// Verify a log and write a new unsigned checkpoint for protected retention.
     AuditCheckpoint {
         #[arg(long)]
         audit: PathBuf,
+        #[arg(long)]
+        out: PathBuf,
+    },
+    /// Sign an explicit checkpoint offline. Never overwrites the destination.
+    AuditCheckpointSign {
+        #[arg(long)]
+        checkpoint: PathBuf,
+        #[arg(long)]
+        key: PathBuf,
+        #[arg(long, default_value = "local")]
+        key_id: String,
         #[arg(long)]
         out: PathBuf,
     },
@@ -254,14 +271,27 @@ async fn execute(cli: Cli) -> Result<bool, Error> {
             audit,
             checkpoint,
             exact,
+            signed_checkpoint,
+            trust,
         } => {
+            if exact && checkpoint.is_none() && signed_checkpoint.is_none() {
+                return Err(Error::Format);
+            }
             let bytes = read_file(&audit, MAX_AUDIT_BYTES)?;
-            let (entries, checkpoint) = match checkpoint {
-                Some(path) => {
-                    let anchor: AuditCheckpoint = read_json(&path, 4096)?;
+            let anchor = match (signed_checkpoint, trust) {
+                (Some(path), Some(trust)) => Some(SignedCheckpoint::verify(
+                    &read_file(&path, MAX_SIGNED_CHECKPOINT_BYTES)?,
+                    &read_json(&trust, 64 * 1024)?,
+                )?),
+                _ => None,
+            };
+            let (entries, checkpoint) = match (anchor, checkpoint) {
+                (Some(anchor), _) => verify_log_against(&bytes, &anchor, exact)?,
+                (None, Some(path)) => {
+                    let anchor: AuditCheckpoint = read_json(&path, MAX_CHECKPOINT_BYTES)?;
                     verify_log_against(&bytes, &anchor, exact)?
                 }
-                None => verify_log(&bytes)?,
+                (None, None) => verify_log(&bytes)?,
             };
             print_json(&serde_json::json!({"entries":entries,"checkpoint":checkpoint}))?;
         }
@@ -272,6 +302,32 @@ async fn execute(cli: Cli) -> Result<bool, Error> {
                 &serde_json::to_vec_pretty(&checkpoint).map_err(|_| Error::Audit)?,
             )?;
             print_json(&checkpoint)?;
+        }
+        Command::AuditCheckpointSign {
+            checkpoint,
+            key,
+            key_id,
+            out,
+        } => {
+            let checkpoint: AuditCheckpoint = read_json(&checkpoint, MAX_CHECKPOINT_BYTES)?;
+            let bytes = read_file(&key, 128)?;
+            let seed: [u8; 32] = hex::decode(
+                std::str::from_utf8(&bytes)
+                    .map_err(|_| Error::Format)?
+                    .trim(),
+            )
+            .map_err(|_| Error::Format)?
+            .try_into()
+            .map_err(|_| Error::Format)?;
+            let signed =
+                SignedCheckpoint::sign(&checkpoint, &key_id, &SigningKey::from_bytes(&seed))?;
+            write_new(
+                &out,
+                &serde_json::to_vec_pretty(&signed).map_err(|_| Error::Format)?,
+            )?;
+            print_json(
+                &serde_json::json!({"signed":true,"key_id":key_id,"entries":checkpoint.entries}),
+            )?;
         }
     }
     Ok(true)

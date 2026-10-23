@@ -349,3 +349,65 @@ fn cli_checkpoint_export_and_trusted_verification() {
     assert!(output.stdout.is_empty());
     assert!(!dir.path().join("bad.json").exists());
 }
+
+#[test]
+fn cli_signed_checkpoint_authentication_and_prefix_modes() {
+    let dir = setup();
+    let mut run = package("run");
+    run.extend(["--audit", "audit.jsonl"]);
+    assert!(call(dir.path(), &run, b"first").status.success());
+    assert!(
+        call(
+            dir.path(),
+            &[
+                "audit-checkpoint",
+                "--audit",
+                "audit.jsonl",
+                "--out",
+                "anchor.json"
+            ],
+            b""
+        )
+        .status
+        .success()
+    );
+    let sign = [
+        "audit-checkpoint-sign",
+        "--checkpoint",
+        "anchor.json",
+        "--key",
+        "signing.key",
+        "--out",
+        "signed-anchor.json",
+    ];
+    assert!(call(dir.path(), &sign, b"").status.success());
+    let original = std::fs::read(dir.path().join("signed-anchor.json")).unwrap();
+    assert_eq!(call(dir.path(), &sign, b"").status.code(), Some(2));
+    assert_eq!(
+        original,
+        std::fs::read(dir.path().join("signed-anchor.json")).unwrap()
+    );
+    let verify = [
+        "audit-verify",
+        "--audit",
+        "audit.jsonl",
+        "--signed-checkpoint",
+        "signed-anchor.json",
+        "--trust",
+        "trust.json",
+    ];
+    let mut exact = verify.to_vec();
+    exact.push("--exact");
+    assert!(call(dir.path(), &exact, b"").status.success());
+    assert!(call(dir.path(), &run, b"second").status.success());
+    assert!(call(dir.path(), &verify, b"").status.success());
+    assert_eq!(call(dir.path(), &exact, b"").status.code(), Some(2));
+    assert_eq!(call(dir.path(), &verify[..5], b"").status.code(), Some(2));
+    let mut conflicting = verify.to_vec();
+    conflicting.extend(["--checkpoint", "anchor.json"]);
+    assert_eq!(call(dir.path(), &conflicting, b"").status.code(), Some(2));
+    std::fs::write(dir.path().join("trust.json"), b"{}").unwrap();
+    let revoked = call(dir.path(), &verify, b"");
+    assert_eq!(revoked.status.code(), Some(2));
+    assert!(revoked.stdout.is_empty());
+}
