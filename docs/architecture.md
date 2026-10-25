@@ -84,3 +84,10 @@ Checkpoint authentication is an optional evidence layer outside guest execution.
 The versioned signed envelope uses domain-separated Ed25519 over exact checkpoint
 JSON, host-selected public keys and bounded strict decoding. See
 [ADR 0008](decisions/0008-signed-audit-checkpoints.md).
+
+## Package preflight
+
+ADR 0009 exposes existing preparation as a read-only compatibility check after
+signature/digest/policy admission. Compilation and interface checks precede any
+store creation or guest execution. Reports are descriptive, not authorization
+for a later run. See [preflight](preflight.md).

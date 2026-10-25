@@ -122,3 +122,6 @@ Retain protected chain heads with [audit checkpoints](docs/audit-checkpoints.md)
 
 Retained audit anchors can optionally be authenticated with a dedicated custodian
 key: see [signed checkpoint usage](docs/audit-checkpoints.md#authenticate-retained-checkpoints).
+
+Check package compilation and WASI command compatibility before execution with
+[`preflight`](docs/preflight.md).

@@ -69,7 +69,34 @@ pub struct Runtime {
     engine: Engine,
 }
 
+/// Preparation evidence only: no instance is created and no guest code is run.
+#[derive(Debug, Serialize)]
+pub struct PreflightReport {
+    pub schema_version: u32,
+    pub profile: String,
+    pub manifest: Manifest,
+    pub manifest_sha256: String,
+    pub signer: String,
+    pub compiled: bool,
+    pub executed: bool,
+}
+
 impl Runtime {
+    /// Check compilation, imports and the command interface after package admission.
+    /// Compilation CPU/RSS still require an externally bounded worker.
+    pub fn preflight(&self, package: VerifiedPackage) -> Result<PreflightReport, Error> {
+        let tool = self.prepare(package)?;
+        Ok(PreflightReport {
+            schema_version: 1,
+            profile: PROFILE.into(),
+            manifest: tool.manifest().clone(),
+            manifest_sha256: tool.manifest_sha256().into(),
+            signer: tool.signer().into(),
+            compiled: true,
+            executed: false,
+        })
+    }
+
     pub fn new() -> Result<Self, Error> {
         let mut config = Config::new();
         config
