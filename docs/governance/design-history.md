@@ -39,3 +39,8 @@ docs/governance/checkpoint-validation.md for actual checks and limits.
 
 Signed audit checkpoints extends the merged evidence workflow. See the accepted decision at
 `docs/decisions/0008-signed-audit-checkpoints.md` and validation at `docs/governance/signed-checkpoint-validation.md`.
+
+## 2026-10-25: TC013
+
+Package preflight: accepted decision `docs/decisions/0009-package-preflight.md`;
+verification record `docs/governance/preflight-validation.md`.

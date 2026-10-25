@@ -57,6 +57,11 @@ enum Command {
         #[command(flatten)]
         package: PackageArgs,
     },
+    /// Verify, compile and check the WASI command interface without running guest code.
+    Preflight {
+        #[command(flatten)]
+        package: PackageArgs,
+    },
     /// Execute stdin once, emit structured JSON, and append a digest-only audit record.
     Run {
         #[command(flatten)]
@@ -227,6 +232,10 @@ async fn execute(cli: Cli) -> Result<bool, Error> {
             print_json(
                 &serde_json::json!({"verified":true,"name":package.manifest().name,"manifest_sha256":package.manifest_sha256()}),
             )?;
+        }
+        Command::Preflight { package } => {
+            let package = package.verify()?;
+            print_json(&Runtime::new()?.preflight(package)?)?;
         }
         Command::Run {
             package,

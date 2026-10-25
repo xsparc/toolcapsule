@@ -81,6 +81,55 @@ fn package(command: &str) -> Vec<&str> {
 }
 
 #[test]
+fn cli_preflight_checks_interfaces_after_admission_without_outputs() {
+    let dir = setup();
+    let output = call(dir.path(), &package("preflight"), b"");
+    assert!(output.status.success());
+    let result: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(result["compiled"], true);
+    assert_eq!(result["executed"], false);
+    assert_eq!(result["manifest"]["name"], "uppercase");
+    assert!(!dir.path().join("audit.jsonl").exists());
+    std::fs::write(dir.path().join("guest.wasm"), b"invalid component").unwrap();
+    let denied = call(dir.path(), &package("preflight"), b"");
+    assert_eq!(denied.status.code(), Some(2));
+    assert!(denied.stdout.is_empty());
+    assert!(String::from_utf8_lossy(&denied.stderr).contains("digest mismatch"));
+    assert!(
+        call(
+            dir.path(),
+            &[
+                "pack",
+                "--component",
+                "guest.wasm",
+                "--name",
+                "uppercase",
+                "--key",
+                "signing.key",
+                "--out",
+                "invalid.json"
+            ],
+            b""
+        )
+        .status
+        .success()
+    );
+    std::fs::copy(
+        dir.path().join("invalid.json"),
+        dir.path().join("signed.json"),
+    )
+    .unwrap();
+    assert!(call(dir.path(), &package("verify"), b"").status.success());
+    let incompatible = call(dir.path(), &package("preflight"), b"");
+    assert_eq!(incompatible.status.code(), Some(2));
+    assert!(incompatible.stdout.is_empty());
+    assert!(String::from_utf8_lossy(&incompatible.stderr).contains("interface validation failed"));
+    std::fs::write(dir.path().join("trust.json"), b"{}").unwrap();
+    let revoked = call(dir.path(), &package("preflight"), b"");
+    assert!(String::from_utf8_lossy(&revoked.stderr).contains("untrusted signer"));
+}
+
+#[test]
 fn cli_sign_verify_run_replay_and_audit_round_trip() {
     let dir = setup();
     assert!(call(dir.path(), &package("verify"), b"").status.success());

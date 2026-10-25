@@ -63,3 +63,9 @@ exclusive checkpoint export and valid rewrite/truncation rejection.
 The delegated 2026-10-23 scope continues the merged evidence milestone.
 Decision: `docs/decisions/0008-signed-audit-checkpoints.md`.
 Acceptance: Round-trip authentication, tampering and wrong-domain rejection, revocation, strict schema and size admission, CLI exclusive output, required trust and prefix/exact verification.
+
+## TC013: Package preflight
+
+The delegated 2026-10-25 scope closes a bounded workflow gap on current main.
+Decision: `docs/decisions/0009-package-preflight.md`.
+Acceptance: Real WASI fixture identity and profile; malformed source, absent command export and unresolved imports fail; valid signed invalid source distinguishes verify from preflight; trust/digest denial precedes compilation; trapping start and command code are not run.
