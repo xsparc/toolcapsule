@@ -91,3 +91,7 @@ ADR 0009 exposes existing preparation as a read-only compatibility check after
 signature/digest/policy admission. Compilation and interface checks precede any
 store creation or guest execution. Reports are descriptive, not authorization
 for a later run. See [preflight](preflight.md).
+
+ADR 0010 lets package authors supply the existing closed Limits contract through
+pack --limits. Shape validation is independent of operator admission; signed
+requested budgets cannot override host policy. See [resource budgets](resource-budgets.md).

@@ -44,3 +44,8 @@ Signed audit checkpoints extends the merged evidence workflow. See the accepted 
 
 Package preflight: accepted decision `docs/decisions/0009-package-preflight.md`;
 verification record `docs/governance/preflight-validation.md`.
+
+## 2026-10-26: TC015
+
+Explicit signed resource budgets: decision `docs/decisions/0010-signed-resource-budgets.md`;
+verification `docs/governance/budget-validation.md`.

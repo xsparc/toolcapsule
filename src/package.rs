@@ -61,6 +61,15 @@ impl Default for Limits {
 }
 
 impl Limits {
+    /// Validate budget shape without granting authority from any host policy.
+    pub fn validate(&self) -> Result<(), Error> {
+        if self.admitted_by(self) {
+            Ok(())
+        } else {
+            Err(Error::Policy)
+        }
+    }
+
     fn admitted_by(&self, max: &Self) -> bool {
         self.fuel > 0
             && self.fuel <= max.fuel

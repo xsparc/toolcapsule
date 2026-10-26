@@ -319,3 +319,31 @@ roadmap_refs = ["docs/roadmap.md"]
 approval_ref = "conversation:2026-10-26-opensteward-small-maintenance-review"
 acceptance_refs = ["docs/governance/runtime-security-patch-validation.md"]
 evidence_refs = ["Cargo.toml", "Cargo.lock", "src/runtime.rs", "tests/runtime.rs"]
+
+[[research_decisions]]
+id = "RD-SIGNED-BUDGETS"
+disposition = "adopted"
+source_refs = ["docs/governance/budget-direction.md"]
+design_refs = ["docs/decisions/0010-signed-resource-budgets.md"]
+
+[[requirements]]
+id = "REQ-SIGNED-BUDGETS"
+statement = "Explicit signed resource budgets with strict admission and explicit evidence identity."
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0010-signed-resource-budgets.md"]
+risk_refs = ["docs/resource-budgets.md"]
+implementation_refs = ["src/package.rs","src/main.rs"]
+verification_refs = ["tests/cli.rs","tests/package.rs"]
+validation_refs = ["docs/governance/budget-validation.md"]
+
+[[work_items]]
+id = "TC015-SIGNED-BUDGETS"
+title = "Explicit signed resource budgets"
+status = "closed"
+requirement_ids = ["REQ-SIGNED-BUDGETS"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-10-26-research-select-next-milestones-and-draft-prs"
+acceptance_refs = ["docs/decisions/0010-signed-resource-budgets.md"]
+evidence_refs = ["tests/cli.rs", "docs/governance/budget-validation.md"]
