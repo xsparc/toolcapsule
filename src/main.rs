@@ -35,7 +35,7 @@ enum Command {
         #[arg(long, default_value = "local")]
         key_id: String,
     },
-    /// Create a signed manifest for a WASI 0.2 command using default bounded limits.
+    /// Create a signed manifest with default or explicitly supplied resource limits.
     Pack {
         #[arg(long)]
         component: PathBuf,
@@ -45,6 +45,9 @@ enum Command {
         version: String,
         #[arg(long, default_value = "A sandboxed WASI tool")]
         description: String,
+        /// Closed Limits JSON (at most 4 KiB); requests still require host admission.
+        #[arg(long)]
+        limits: Option<PathBuf>,
         #[arg(long)]
         key: PathBuf,
         #[arg(long, default_value = "local")]
@@ -201,10 +204,16 @@ async fn execute(cli: Cli) -> Result<bool, Error> {
             name,
             version,
             description,
+            limits,
             key,
             key_id,
             out,
         } => {
+            let limits: Limits = match limits {
+                Some(path) => read_json(&path, 4096)?,
+                None => Limits::default(),
+            };
+            limits.validate()?;
             let key = read_file(&key, 128)?;
             let key: [u8; 32] =
                 hex::decode(std::str::from_utf8(&key).map_err(|_| Error::Format)?.trim())
@@ -219,7 +228,7 @@ async fn execute(cli: Cli) -> Result<bool, Error> {
                 abi: "wasi:cli/command@0.2".into(),
                 component_sha256: digest(&read_file(&component, 16 * 1024 * 1024)?),
                 capabilities: Capabilities::default(),
-                limits: Limits::default(),
+                limits,
             };
             let signed = SignedManifest::sign(&manifest, &key_id, &SigningKey::from_bytes(&key))?;
             write_new(

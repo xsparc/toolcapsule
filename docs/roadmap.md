@@ -78,3 +78,9 @@ legacy-profile replay and the existing isolation, preflight, cache, pool,
 checkpoint and governance regressions. The guest ABI and capability policy stay
 within the existing design. No Wasmtime 50 migration or new external capability
 is included.
+
+## TC015: Explicit signed resource budgets
+
+The delegated 2026-10-26 scope extends an existing admitted contract.
+Decision: `docs/decisions/0010-signed-resource-budgets.md`.
+Acceptance: Custom limits appear unchanged in authenticated preflight output; input enforcement rejects oversized invocation; stricter host policy rejects the package; unknown/missing/zero/too-small/oversized limits fail before output; default packaging and non-overwrite behavior remain covered.

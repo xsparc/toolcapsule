@@ -125,3 +125,6 @@ key: see [signed checkpoint usage](docs/audit-checkpoints.md#authenticate-retain
 
 Check package compilation and WASI command compatibility before execution with
 [`preflight`](docs/preflight.md).
+
+Package authors can select [explicit signed resource budgets](docs/resource-budgets.md)
+with `pack --limits`; host policy remains authoritative.

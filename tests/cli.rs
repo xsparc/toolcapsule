@@ -81,6 +81,105 @@ fn package(command: &str) -> Vec<&str> {
 }
 
 #[test]
+fn pack_explicit_limits_are_signed_enforced_and_cannot_grant_host_authority() {
+    let dir = setup();
+    let limits = toolcapsule::Limits {
+        input_bytes: 3,
+        output_bytes: 100,
+        ..Default::default()
+    };
+    std::fs::write(
+        dir.path().join("limits.json"),
+        serde_json::to_vec(&limits).unwrap(),
+    )
+    .unwrap();
+    let pack = [
+        "pack",
+        "--component",
+        "guest.wasm",
+        "--name",
+        "uppercase",
+        "--key",
+        "signing.key",
+        "--limits",
+        "limits.json",
+        "--out",
+        "custom.json",
+    ];
+    assert!(call(dir.path(), &pack, b"").status.success());
+    std::fs::copy(
+        dir.path().join("custom.json"),
+        dir.path().join("signed.json"),
+    )
+    .unwrap();
+    let output = call(dir.path(), &package("preflight"), b"");
+    assert!(output.status.success());
+    assert_eq!(
+        serde_json::from_slice::<Value>(&output.stdout).unwrap()["manifest"]["limits"],
+        serde_json::to_value(&limits).unwrap()
+    );
+    let mut run = package("run");
+    run.extend(["--audit", "audit.jsonl"]);
+    assert!(call(dir.path(), &run, b"abc").status.success());
+    assert_eq!(call(dir.path(), &run, b"abcd").status.code(), Some(2));
+    let mut policy: Policy =
+        serde_json::from_slice(&std::fs::read(dir.path().join("policy.json")).unwrap()).unwrap();
+    policy.max_limits.input_bytes = 2;
+    std::fs::write(
+        dir.path().join("policy.json"),
+        serde_json::to_vec(&policy).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(
+        call(dir.path(), &package("verify"), b"").status.code(),
+        Some(2)
+    );
+    assert_eq!(call(dir.path(), &pack, b"").status.code(), Some(2));
+}
+
+#[test]
+fn pack_rejects_invalid_limits_before_creating_output() {
+    let dir = setup();
+    let valid = serde_json::to_value(toolcapsule::Limits::default()).unwrap();
+    let mut invalid = Vec::new();
+    for (field, value) in [
+        ("fuel", 0),
+        ("memory_bytes", 65535),
+        ("timeout_ms", 9),
+        ("input_bytes", 0),
+        ("output_bytes", 0),
+        ("extra", 1),
+    ] {
+        let mut data = valid.clone();
+        data[field] = json!(value);
+        invalid.push(serde_json::to_vec(&data).unwrap());
+    }
+    invalid.extend([b"{}".to_vec(), vec![b' '; 4097]]);
+    for bytes in invalid {
+        std::fs::write(dir.path().join("limits.json"), bytes).unwrap();
+        let output = call(
+            dir.path(),
+            &[
+                "pack",
+                "--component",
+                "guest.wasm",
+                "--name",
+                "uppercase",
+                "--key",
+                "signing.key",
+                "--limits",
+                "limits.json",
+                "--out",
+                "rejected.json",
+            ],
+            b"",
+        );
+        assert_eq!(output.status.code(), Some(2));
+        assert!(!dir.path().join("rejected.json").exists());
+    }
+}
+
+#[test]
 fn cli_preflight_checks_interfaces_after_admission_without_outputs() {
     let dir = setup();
     let output = call(dir.path(), &package("preflight"), b"");
