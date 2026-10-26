@@ -347,3 +347,31 @@ roadmap_refs = ["docs/roadmap.md"]
 approval_ref = "conversation:2026-10-26-research-select-next-milestones-and-draft-prs"
 acceptance_refs = ["docs/decisions/0010-signed-resource-budgets.md"]
 evidence_refs = ["tests/cli.rs", "docs/governance/budget-validation.md"]
+
+[[research_decisions]]
+id = "RD-CONFIGURATION-TEMPLATES"
+disposition = "adopted"
+source_refs = ["docs/governance/template-direction.md"]
+design_refs = ["docs/decisions/0011-configuration-templates.md"]
+
+[[requirements]]
+id = "REQ-CONFIGURATION-TEMPLATES"
+statement = "Configuration templates with bounded admission and explicit authority."
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0011-configuration-templates.md"]
+risk_refs = ["docs/configuration-templates.md"]
+implementation_refs = ["src/main.rs"]
+verification_refs = ["tests/cli.rs"]
+validation_refs = ["docs/governance/template-validation.md"]
+
+[[work_items]]
+id = "TC016-CONFIGURATION-TEMPLATES"
+title = "Configuration templates"
+status = "closed"
+requirement_ids = ["REQ-CONFIGURATION-TEMPLATES"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-10-27-five-item-milestone-and-draft-prs"
+acceptance_refs = ["docs/decisions/0011-configuration-templates.md"]
+evidence_refs = ["tests/cli.rs", "docs/governance/template-validation.md"]

@@ -49,3 +49,7 @@ verification record `docs/governance/preflight-validation.md`.
 
 Explicit signed resource budgets: decision `docs/decisions/0010-signed-resource-budgets.md`;
 verification `docs/governance/budget-validation.md`.
+
+## 2026-10-27: TC016
+
+Configuration templates: decision `docs/decisions/0011-configuration-templates.md`; validation `docs/governance/template-validation.md`.

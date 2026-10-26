@@ -26,6 +26,18 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    /// Emit current default Limits JSON without creating keys or executing code.
+    LimitsTemplate {
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+    /// Emit a host policy with an empty tool allowlist; no tool is authorized.
+    PolicyTemplate {
+        #[arg(long)]
+        limits: Option<PathBuf>,
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
     /// Generate a signing seed and a separate public trust store. Never overwrites files.
     Keygen {
         #[arg(long)]
@@ -158,6 +170,16 @@ impl PackageArgs {
     }
 }
 
+fn emit_template(value: &impl serde::Serialize, out: Option<PathBuf>) -> Result<(), Error> {
+    match out {
+        Some(path) => write_new(
+            &path,
+            &serde_json::to_vec_pretty(value).map_err(|_| Error::Format)?,
+        ),
+        None => print_json(value),
+    }
+}
+
 fn print_json(value: &impl serde::Serialize) -> Result<(), Error> {
     let mut out = io::stdout().lock();
     serde_json::to_writer(&mut out, value).map_err(|_| Error::Io)?;
@@ -180,6 +202,25 @@ async fn main() -> std::process::ExitCode {
 
 async fn execute(cli: Cli) -> Result<bool, Error> {
     match cli.command {
+        Command::LimitsTemplate { out } => {
+            let limits = Limits::default();
+            limits.validate()?;
+            emit_template(&limits, out)?;
+        }
+        Command::PolicyTemplate { limits, out } => {
+            let max_limits: Limits = match limits {
+                Some(path) => read_json(&path, 4096)?,
+                None => Limits::default(),
+            };
+            max_limits.validate()?;
+            emit_template(
+                &Policy {
+                    max_limits,
+                    ..Policy::default()
+                },
+                out,
+            )?;
+        }
         Command::Keygen { key, trust, key_id } => {
             if key_id.is_empty() || key_id.len() > 64 {
                 return Err(Error::Format);

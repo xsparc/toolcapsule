@@ -84,3 +84,12 @@ is included.
 The delegated 2026-10-26 scope extends an existing admitted contract.
 Decision: `docs/decisions/0010-signed-resource-budgets.md`.
 Acceptance: Custom limits appear unchanged in authenticated preflight output; input enforcement rejects oversized invocation; stricter host policy rejects the package; unknown/missing/zero/too-small/oversized limits fail before output; default packaging and non-overwrite behavior remain covered.
+
+## TC016: Configuration templates
+
+Delegated 2026-10-27 milestone. Decision: `docs/decisions/0011-configuration-templates.md`.
+
+1. Generate validated limits JSON for `pack --limits`.
+2. Generate deny-by-default host-policy JSON, optionally using explicit limits.
+
+Acceptance: Generated limits round-trip through the existing contract. Generated policy denies a signed package until an operator explicitly adds its tool to the allowlist. Invalid and oversized limits produce no output; existing files are never overwritten.
