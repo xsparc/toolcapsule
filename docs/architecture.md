@@ -2,7 +2,7 @@
 
 ToolCapsule is an embeddable Rust library with thin CLI and MCP adapters.
 The initial contract is a WASI 0.2 command: UTF-8 input on stdin, bounded stdout
-and stderr, and an exit result. Wasmtime is pinned to stable 49.0.3 in the
+and stderr, and an exit result. Wasmtime is pinned to stable 49.0.4 in the
 execution slice. WASI 0.3 async integration is a subsequent compatibility slice.
 
 ## Trust and execution boundaries

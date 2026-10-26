@@ -69,3 +69,12 @@ Acceptance: Round-trip authentication, tampering and wrong-domain rejection, rev
 The delegated 2026-10-25 scope closes a bounded workflow gap on current main.
 Decision: `docs/decisions/0009-package-preflight.md`.
 Acceptance: Real WASI fixture identity and profile; malformed source, absent command export and unresolved imports fail; valid signed invalid source distinguishes verify from preflight; trust/digest denial precedes compilation; trapping start and command code are not run.
+
+## TC014: Wasmtime security patch
+
+Pin the current 49.x line to 49.0.4 for the published AArch64 compiler advisory.
+Acceptance includes dependency resolution, a new runtime profile, rejection of
+legacy-profile replay and the existing isolation, preflight, cache, pool,
+checkpoint and governance regressions. The guest ABI and capability policy stay
+within the existing design. No Wasmtime 50 migration or new external capability
+is included.

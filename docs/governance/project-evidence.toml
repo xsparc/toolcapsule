@@ -34,8 +34,8 @@ source_priority = ["docs/architecture.md", "docs/roadmap.md", "docs/decisions/",
 dhf_is_authoritative = false
 
 [review]
-last_reviewed = "2026-10-19"
-review_due = "2026-11-19"
+last_reviewed = "2026-10-26"
+review_due = "2026-11-26"
 
 [[objectives]]
 id = "OBJ-SAFE-TOOLS"
@@ -309,3 +309,13 @@ roadmap_refs = ["docs/roadmap.md"]
 approval_ref = "conversation:2026-10-25-research-select-next-milestones-and-draft-prs"
 acceptance_refs = ["docs/decisions/0009-package-preflight.md"]
 evidence_refs = ["tests/preflight.rs", "docs/governance/preflight-validation.md"]
+
+[[work_items]]
+id = "TC014-RUNTIME-SECURITY-PATCH"
+title = "Apply the Wasmtime 49.0.4 security patch and version replay evidence"
+status = "closed"
+requirement_ids = ["REQ-WASI-RUNTIME"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-10-26-opensteward-small-maintenance-review"
+acceptance_refs = ["docs/governance/runtime-security-patch-validation.md"]
+evidence_refs = ["Cargo.toml", "Cargo.lock", "src/runtime.rs", "tests/runtime.rs"]

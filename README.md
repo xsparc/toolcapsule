@@ -8,7 +8,7 @@ Run AI-agent tools as signed WebAssembly components with explicit capabilities,
 resource budgets, audit receipts, and deterministic replay. Use the Rust library,
 CLI, or MCP stdio adapter. MIT licensed; no hosted service is required.
 
-The MVP runs **WASI 0.2 command components** on pinned Wasmtime 49.0.3. It admits
+The MVP runs **WASI 0.2 command components** on pinned Wasmtime 49.0.4. It admits
 pure transformations: no host files, environment, sockets, secrets, or
 subprocesses. Unsupported grants fail closed. Clocks are fixed and random bytes
 are seeded fixtures. WASI 0.3 and brokered external capabilities are on the
