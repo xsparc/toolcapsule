@@ -81,6 +81,81 @@ fn package(command: &str) -> Vec<&str> {
 }
 
 #[test]
+fn templates_roundtrip_and_policy_requires_explicit_authority() {
+    let dir = setup();
+    let output = call(dir.path(), &["limits-template"], b"");
+    assert!(output.status.success());
+    let limits: toolcapsule::Limits = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(limits, toolcapsule::Limits::default());
+    let emit = ["limits-template", "--out", "limits.json"];
+    assert!(call(dir.path(), &emit, b"").status.success());
+    let original = std::fs::read(dir.path().join("limits.json")).unwrap();
+    assert_eq!(call(dir.path(), &emit, b"").status.code(), Some(2));
+    assert_eq!(
+        std::fs::read(dir.path().join("limits.json")).unwrap(),
+        original
+    );
+    let emit = [
+        "policy-template",
+        "--limits",
+        "limits.json",
+        "--out",
+        "host.json",
+    ];
+    assert!(call(dir.path(), &emit, b"").status.success());
+    assert_eq!(call(dir.path(), &emit, b"").status.code(), Some(2));
+    let mut policy: Policy =
+        serde_json::from_slice(&std::fs::read(dir.path().join("host.json")).unwrap()).unwrap();
+    assert!(policy.allowed_tools.is_empty());
+    assert_eq!(policy.max_limits, limits);
+    std::fs::copy(dir.path().join("host.json"), dir.path().join("policy.json")).unwrap();
+    assert_eq!(
+        call(dir.path(), &package("verify"), b"").status.code(),
+        Some(2)
+    );
+    policy.allowed_tools.push("uppercase".into());
+    std::fs::write(
+        dir.path().join("policy.json"),
+        serde_json::to_vec(&policy).unwrap(),
+    )
+    .unwrap();
+    assert!(call(dir.path(), &package("verify"), b"").status.success());
+}
+
+#[test]
+fn policy_template_rejects_bad_input_before_output() {
+    let dir = tempfile::tempdir().unwrap();
+    let output = call(dir.path(), &["policy-template"], b"");
+    let policy: Policy = serde_json::from_slice(&output.stdout).unwrap();
+    assert!(policy.allowed_tools.is_empty());
+    for bytes in [
+        b"{}".to_vec(),
+        vec![b' '; 4097],
+        serde_json::to_vec(&toolcapsule::Limits {
+            fuel: 0,
+            ..Default::default()
+        })
+        .unwrap(),
+    ] {
+        std::fs::write(dir.path().join("limits.json"), bytes).unwrap();
+        let output = call(
+            dir.path(),
+            &[
+                "policy-template",
+                "--limits",
+                "limits.json",
+                "--out",
+                "host.json",
+            ],
+            b"",
+        );
+        assert_eq!(output.status.code(), Some(2));
+        assert!(output.stdout.is_empty());
+        assert!(!dir.path().join("host.json").exists());
+    }
+}
+
+#[test]
 fn pack_explicit_limits_are_signed_enforced_and_cannot_grant_host_authority() {
     let dir = setup();
     let limits = toolcapsule::Limits {

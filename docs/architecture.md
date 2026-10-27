@@ -95,3 +95,7 @@ for a later run. See [preflight](preflight.md).
 ADR 0010 lets package authors supply the existing closed Limits contract through
 pack --limits. Shape validation is independent of operator admission; signed
 requested budgets cannot override host policy. See [resource budgets](resource-budgets.md).
+
+### Configuration templates
+
+Add `limits-template` for the existing validated default Limits contract and `policy-template [--limits limits.json]` for a host policy with an empty tool allowlist. Both print JSON by default or exclusively create `--out` files. Custom limits are bounded to 4096 bytes and validated before output. No keys, trust stores or guest execution are involved. See `docs/decisions/0011-configuration-templates.md` for acceptance and limits.

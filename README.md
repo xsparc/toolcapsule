@@ -128,3 +128,7 @@ Check package compilation and WASI command compatibility before execution with
 
 Package authors can select [explicit signed resource budgets](docs/resource-budgets.md)
 with `pack --limits`; host policy remains authoritative.
+
+### Configuration templates
+
+Omit `--out` to print JSON. `policy-template` without `--limits` uses the default budgets. The generated `allowed_tools` array is empty; explicitly edit it before admitting a tool. The component size cap remains 16 MiB. `limits-template` supplies the complete input shape accepted by `pack --limits`. Neither command creates signing keys or configures trust. See [the workflow](docs/configuration-templates.md).
