@@ -93,3 +93,15 @@ Delegated 2026-10-27 milestone. Decision: `docs/decisions/0011-configuration-tem
 2. Generate deny-by-default host-policy JSON, optionally using explicit limits.
 
 Acceptance: Generated limits round-trip through the existing contract. Generated policy denies a signed package until an operator explicitly adds its tool to the allowlist. Invalid and oversized limits produce no output; existing files are never overwritten.
+
+## TC017: Offline configuration validation
+
+Subsequent five-item handoff: [next milestone](next-milestone.md). TC018 owns
+offline trust validation and budget-fit reporting; these remain planned.
+
+Delegated 2026-10-27 milestone. Decision: `docs/decisions/0012-configuration-validation.md`.
+
+1. Validate limits files offline.
+2. Validate policy files offline with explicit empty-allowlist reporting.
+
+Acceptance: Generated defaults pass both commands; invalid, unknown-field and oversized files fail with exit 2 and no success JSON. Policy checks reject duplicate/unusable names, zero component caps and invalid limits. Valid empty allowlists report denies_all_tools=true. Inputs stay unchanged and diagnostics do not echo supplied fields.

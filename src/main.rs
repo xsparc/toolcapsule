@@ -26,6 +26,16 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    /// Validate a limits file without signing, compiling or executing a tool.
+    LimitsCheck {
+        #[arg(long)]
+        limits: PathBuf,
+    },
+    /// Check host policy authoring errors; does not grant or verify package authority.
+    PolicyCheck {
+        #[arg(long)]
+        policy: PathBuf,
+    },
     /// Emit current default Limits JSON without creating keys or executing code.
     LimitsTemplate {
         #[arg(long)]
@@ -202,6 +212,19 @@ async fn main() -> std::process::ExitCode {
 
 async fn execute(cli: Cli) -> Result<bool, Error> {
     match cli.command {
+        Command::LimitsCheck { limits } => {
+            read_json::<Limits>(&limits, 4096)?.validate()?;
+            print_json(&serde_json::json!({"schema_version": 1, "kind": "limits", "valid": true}))?;
+        }
+        Command::PolicyCheck { policy } => {
+            let policy: Policy = read_json(&policy, 64 * 1024)?;
+            policy.validate()?;
+            print_json(&serde_json::json!({
+                "schema_version": 1, "kind": "policy", "valid": true,
+                "allowed_tool_count": policy.allowed_tools.len(),
+                "denies_all_tools": policy.allowed_tools.is_empty()
+            }))?;
+        }
         Command::LimitsTemplate { out } => {
             let limits = Limits::default();
             limits.validate()?;

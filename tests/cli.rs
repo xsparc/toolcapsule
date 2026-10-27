@@ -81,6 +81,40 @@ fn package(command: &str) -> Vec<&str> {
 }
 
 #[test]
+fn configuration_checks_are_bounded_read_only_and_do_not_echo_input() {
+    let dir = tempfile::tempdir().unwrap();
+    for (template, check, option, filename) in [
+        ("limits-template", "limits-check", "--limits", "limits.json"),
+        ("policy-template", "policy-check", "--policy", "policy.json"),
+    ] {
+        assert!(
+            call(dir.path(), &[template, "--out", filename], b"")
+                .status
+                .success()
+        );
+        let before = std::fs::read(dir.path().join(filename)).unwrap();
+        let output = call(dir.path(), &[check, option, filename], b"");
+        assert!(output.status.success());
+        let value: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+        assert_eq!(value["valid"], true);
+        assert_eq!(value["schema_version"], 1);
+        if check == "policy-check" {
+            assert_eq!(value["denies_all_tools"], true);
+            assert_eq!(value["allowed_tool_count"], 0);
+        }
+        assert_eq!(std::fs::read(dir.path().join(filename)).unwrap(), before);
+        for invalid in [b"{\"private_marker\":1}".to_vec(), vec![b' '; 65537]] {
+            std::fs::write(dir.path().join(filename), invalid).unwrap();
+            let output = call(dir.path(), &[check, option, filename], b"");
+            assert_eq!(output.status.code(), Some(2));
+            assert!(output.stdout.is_empty());
+            assert!(!String::from_utf8_lossy(&output.stderr).contains("private_marker"));
+        }
+    }
+    assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 2);
+}
+
+#[test]
 fn templates_roundtrip_and_policy_requires_explicit_authority() {
     let dir = setup();
     let output = call(dir.path(), &["limits-template"], b"");

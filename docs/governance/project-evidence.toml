@@ -375,3 +375,31 @@ roadmap_refs = ["docs/roadmap.md"]
 approval_ref = "conversation:2026-10-27-five-item-milestone-and-draft-prs"
 acceptance_refs = ["docs/decisions/0011-configuration-templates.md"]
 evidence_refs = ["tests/cli.rs", "docs/governance/template-validation.md"]
+
+[[research_decisions]]
+id = "RD-CONFIGURATION-VALIDATION"
+disposition = "adopted"
+source_refs = ["docs/governance/configuration-validation-direction.md"]
+design_refs = ["docs/decisions/0012-configuration-validation.md"]
+
+[[requirements]]
+id = "REQ-CONFIGURATION-VALIDATION"
+statement = "Offline configuration validation with bounded admission and explicit authority."
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0012-configuration-validation.md"]
+risk_refs = ["docs/configuration-validation.md"]
+implementation_refs = ["src/main.rs", "src/package.rs"]
+verification_refs = ["tests/cli.rs", "tests/package.rs"]
+validation_refs = ["docs/governance/configuration-validation.md"]
+
+[[work_items]]
+id = "TC017-CONFIGURATION-VALIDATION"
+title = "Offline configuration validation"
+status = "closed"
+requirement_ids = ["REQ-CONFIGURATION-VALIDATION"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-10-27-five-item-milestone-and-draft-prs"
+acceptance_refs = ["docs/decisions/0012-configuration-validation.md"]
+evidence_refs = ["tests/cli.rs", "docs/governance/configuration-validation.md"]

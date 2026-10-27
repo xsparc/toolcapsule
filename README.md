@@ -132,3 +132,7 @@ with `pack --limits`; host policy remains authoritative.
 ### Configuration templates
 
 Omit `--out` to print JSON. `policy-template` without `--limits` uses the default budgets. The generated `allowed_tools` array is empty; explicitly edit it before admitting a tool. The component size cap remains 16 MiB. `limits-template` supplies the complete input shape accepted by `pack --limits`. Neither command creates signing keys or configures trust. See [the workflow](docs/configuration-templates.md).
+
+### Offline configuration validation
+
+Successful checks print version-1 JSON with kind and valid=true, then exit 0. Policy checks also report allowed_tool_count and denies_all_tools. Errors exit 2 without success JSON. Files are read only and input values are not printed. Policy names use the manifest grammar: 1–64 ASCII lowercase letters, digits or hyphens; duplicates are rejected. See [the workflow](docs/configuration-validation.md).

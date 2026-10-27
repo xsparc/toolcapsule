@@ -99,3 +99,7 @@ requested budgets cannot override host policy. See [resource budgets](resource-b
 ### Configuration templates
 
 Add `limits-template` for the existing validated default Limits contract and `policy-template [--limits limits.json]` for a host policy with an empty tool allowlist. Both print JSON by default or exclusively create `--out` files. Custom limits are bounded to 4096 bytes and validated before output. No keys, trust stores or guest execution are involved. See `docs/decisions/0011-configuration-templates.md` for acceptance and limits.
+
+### Offline configuration validation
+
+Add read-only `limits-check --limits` and `policy-check --policy` commands. Limits input is capped at 4096 bytes and policy input at 64 KiB, with strict existing JSON parsing. Limits reuse Limits::validate. Policy::validate checks valid maximum budgets, a positive component cap, valid manifest tool names and unique allowlist entries; an empty allowlist remains valid. Return fixed version-1 JSON summaries without input values or paths. Validation does not load trust or signing keys, compile or execute code, or modify files. See `docs/decisions/0012-configuration-validation.md` for acceptance and limits.
