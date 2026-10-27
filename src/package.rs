@@ -124,14 +124,8 @@ pub struct Manifest {
 
 impl Manifest {
     pub fn validate(&self) -> Result<(), Error> {
-        let valid_name = !self.name.is_empty()
-            && self.name.len() <= 64
-            && self
-                .name
-                .bytes()
-                .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-');
         if self.schema_version != 1
-            || !valid_name
+            || !valid_tool_name(&self.name)
             || self.version.is_empty()
             || self.version.len() > 64
             || self.description.len() > 512
@@ -185,6 +179,34 @@ pub struct Policy {
     pub max_limits: Limits,
     pub max_component_bytes: usize,
     pub allowed_tools: Vec<String>,
+}
+
+fn valid_tool_name(name: &str) -> bool {
+    !name.is_empty()
+        && name.len() <= 64
+        && name
+            .bytes()
+            .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
+}
+
+impl Policy {
+    /// Check configuration authoring errors without admitting any package.
+    /// An empty allowlist is valid and denies every tool.
+    pub fn validate(&self) -> Result<(), Error> {
+        self.max_limits.validate()?;
+        if self.max_component_bytes == 0
+            || self.allowed_tools.iter().any(|name| !valid_tool_name(name))
+            || self
+                .allowed_tools
+                .iter()
+                .collect::<std::collections::BTreeSet<_>>()
+                .len()
+                != self.allowed_tools.len()
+        {
+            return Err(Error::Policy);
+        }
+        Ok(())
+    }
 }
 
 impl Default for Policy {

@@ -53,3 +53,7 @@ verification `docs/governance/budget-validation.md`.
 ## 2026-10-27: TC016
 
 Configuration templates: decision `docs/decisions/0011-configuration-templates.md`; validation `docs/governance/template-validation.md`.
+
+## 2026-10-27: TC017
+
+Offline configuration validation: decision `docs/decisions/0012-configuration-validation.md`; validation `docs/governance/configuration-validation.md`.

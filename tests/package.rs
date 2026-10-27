@@ -26,6 +26,28 @@ fn envelope(manifest: &Manifest, key: &SigningKey) -> Vec<u8> {
 }
 
 #[test]
+fn policy_authoring_validation_rejects_unusable_and_duplicate_grants() {
+    assert!(Policy::default().validate().is_ok());
+    let (_, _, _, mut policy) = fixture();
+    assert!(policy.validate().is_ok());
+    for names in [
+        vec!["".into()],
+        vec!["Bad/name".into()],
+        vec!["x".repeat(65)],
+        vec!["echo".into(), "echo".into()],
+    ] {
+        policy.allowed_tools = names;
+        assert!(policy.validate().is_err());
+    }
+    policy = Policy::default();
+    policy.max_component_bytes = 0;
+    assert!(policy.validate().is_err());
+    policy = Policy::default();
+    policy.max_limits.fuel = 0;
+    assert!(policy.validate().is_err());
+}
+
+#[test]
 fn verifies_signature_digest_and_host_admission() {
     let (manifest, key, trust, policy) = fixture();
     let package = VerifiedPackage::verify(
