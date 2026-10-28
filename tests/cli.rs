@@ -81,6 +81,73 @@ fn package(command: &str) -> Vec<&str> {
 }
 
 #[test]
+fn trust_and_budget_checks_are_read_only_and_distinguish_nonfit_from_invalid() {
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(dir.path().join("trust.json"), b"{}").unwrap();
+    let result = call(dir.path(), &["trust-check", "--trust", "trust.json"], b"");
+    assert!(result.status.success());
+    let value: serde_json::Value = serde_json::from_slice(&result.stdout).unwrap();
+    assert_eq!(value["key_count"], 0);
+    assert_eq!(value["denies_all_signers"], true);
+    std::fs::write(
+        dir.path().join("trust.json"),
+        b"{\"private_marker\":\"bad\"}",
+    )
+    .unwrap();
+    let result = call(dir.path(), &["trust-check", "--trust", "trust.json"], b"");
+    assert_eq!(result.status.code(), Some(2));
+    assert!(result.stdout.is_empty());
+    assert!(!String::from_utf8_lossy(&result.stderr).contains("private_marker"));
+    assert!(
+        call(
+            dir.path(),
+            &["limits-template", "--out", "limits.json"],
+            b""
+        )
+        .status
+        .success()
+    );
+    assert!(
+        call(
+            dir.path(),
+            &["policy-template", "--out", "policy.json"],
+            b""
+        )
+        .status
+        .success()
+    );
+    let args = [
+        "budget-fit",
+        "--limits",
+        "limits.json",
+        "--policy",
+        "policy.json",
+    ];
+    let result = call(dir.path(), &args, b"");
+    assert!(result.status.success());
+    let value: serde_json::Value = serde_json::from_slice(&result.stdout).unwrap();
+    assert_eq!(value["fits"], true);
+    assert_eq!(value["package_admission"], "not_checked");
+    let mut limits = toolcapsule::Limits::default();
+    limits.fuel += 1;
+    let bytes = serde_json::to_vec(&limits).unwrap();
+    std::fs::write(dir.path().join("limits.json"), &bytes).unwrap();
+    let result = call(dir.path(), &args, b"");
+    assert_eq!(result.status.code(), Some(1));
+    let value: serde_json::Value = serde_json::from_slice(&result.stdout).unwrap();
+    assert_eq!(value["exceeded_fields"], serde_json::json!(["fuel"]));
+    assert_eq!(
+        std::fs::read(dir.path().join("limits.json")).unwrap(),
+        bytes
+    );
+    std::fs::write(dir.path().join("limits.json"), b"{}").unwrap();
+    let result = call(dir.path(), &args, b"");
+    assert_eq!(result.status.code(), Some(2));
+    assert!(result.stdout.is_empty());
+    assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 3);
+}
+
+#[test]
 fn configuration_checks_are_bounded_read_only_and_do_not_echo_input() {
     let dir = tempfile::tempdir().unwrap();
     for (template, check, option, filename) in [

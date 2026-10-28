@@ -57,3 +57,7 @@ Configuration templates: decision `docs/decisions/0011-configuration-templates.m
 ## 2026-10-27: TC017
 
 Offline configuration validation: decision `docs/decisions/0012-configuration-validation.md`; validation `docs/governance/configuration-validation.md`.
+
+## 2026-10-28: TC018
+
+Trust validation and budget-fit reporting: decision `docs/decisions/0013-trust-budget-checks.md`; validation `docs/governance/trust-budget-validation.md`.

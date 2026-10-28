@@ -26,6 +26,18 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    /// Check public trust-store encoding without loading signing seeds or executing tools.
+    TrustCheck {
+        #[arg(long)]
+        trust: PathBuf,
+    },
+    /// Compare requested limits with host maxima; fit does not admit a package.
+    BudgetFit {
+        #[arg(long)]
+        limits: PathBuf,
+        #[arg(long)]
+        policy: PathBuf,
+    },
     /// Validate a limits file without signing, compiling or executing a tool.
     LimitsCheck {
         #[arg(long)]
@@ -212,6 +224,26 @@ async fn main() -> std::process::ExitCode {
 
 async fn execute(cli: Cli) -> Result<bool, Error> {
     match cli.command {
+        Command::TrustCheck { trust } => {
+            let count =
+                trust_check::check_trust(&read_file(&trust, trust_check::MAX_TRUST_BYTES)?)?;
+            print_json(
+                &serde_json::json!({"schema_version": 1, "kind": "trust", "valid": true,
+                "key_count": count, "denies_all_signers": count == 0}),
+            )?;
+        }
+        Command::BudgetFit { limits, policy } => {
+            let limits: Limits = read_json(&limits, 4096)?;
+            let policy: Policy = read_json(&policy, 64 * 1024)?;
+            policy.validate()?;
+            let exceeded = limits.exceeded_fields(&policy.max_limits)?;
+            let fits = exceeded.is_empty();
+            print_json(
+                &serde_json::json!({"schema_version": 1, "kind": "budget_fit",
+                "fits": fits, "exceeded_fields": exceeded, "package_admission": "not_checked"}),
+            )?;
+            return Ok(fits);
+        }
         Command::LimitsCheck { limits } => {
             read_json::<Limits>(&limits, 4096)?.validate()?;
             print_json(&serde_json::json!({"schema_version": 1, "kind": "limits", "valid": true}))?;
