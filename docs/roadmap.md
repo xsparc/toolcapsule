@@ -107,7 +107,7 @@ Acceptance: Generated defaults pass both commands; invalid, unknown-field and ov
 
 ## TC018: Trust validation and budget-fit reporting
 
-Following iteration: [TC019 and SW026 handoff](next-milestone.md), planned only.
+TC019 implements the [retained handoff](governance/handoff-2026-10-28.md).
 
 Delegated 2026-10-28 milestone. Decision: `docs/decisions/0013-trust-budget-checks.md`.
 
@@ -115,3 +115,11 @@ Delegated 2026-10-28 milestone. Decision: `docs/decisions/0013-trust-budget-chec
 2. Report requested budget fit using shared admission comparisons.
 
 Acceptance: Empty and valid trust maps pass; duplicate/escaped-equivalent IDs, malformed types, invalid/weak/incorrect-length keys, trailing data and oversized inputs fail. Equality fits; each exceeded budget matches actual package denial. CLI differentiates fit, non-fit and invalid input, reports no raw input and leaves files unchanged.
+
+## TC019: Validation diagnostics and configuration acceptance
+
+Add --json-errors to the four existing checks and a temporary synthetic configuration workflow tested by the current CI matrix.
+
+Decision: docs/decisions/0014-validation-diagnostics.md.
+Acceptance: Fixed JSON codes and unchanged 0/1/2 exits; no input echo; synthetic signed fixture preflight with explicit allowlist and budget denials.
+Next iteration: docs/next-milestone.md (planned only).

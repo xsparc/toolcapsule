@@ -431,3 +431,31 @@ roadmap_refs = ["docs/roadmap.md"]
 approval_ref = "conversation:2026-10-28-five-item-milestone-and-draft-prs"
 acceptance_refs = ["docs/decisions/0013-trust-budget-checks.md"]
 evidence_refs = ["tests/trust_check.rs", "docs/governance/trust-budget-validation.md"]
+
+[[research_decisions]]
+id = "RD-VALIDATION-DIAGNOSTICS"
+disposition = "adopted"
+source_refs = ["docs/governance/validation-diagnostics-direction.md"]
+design_refs = ["docs/decisions/0014-validation-diagnostics.md"]
+
+[[requirements]]
+id = "REQ-VALIDATION-DIAGNOSTICS"
+statement = "Validation diagnostics and configuration acceptance with bounded inputs and explicit evidence scope."
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0014-validation-diagnostics.md"]
+risk_refs = ["docs/validation-diagnostics.md"]
+implementation_refs = ["src/main.rs"]
+verification_refs = ["tests/configuration_workflow.rs","tests/cli.rs"]
+validation_refs = ["docs/governance/validation-diagnostics-validation.md"]
+
+[[work_items]]
+id = "TC019-VALIDATION-DIAGNOSTICS"
+title = "Validation diagnostics and configuration acceptance"
+status = "closed"
+requirement_ids = ["REQ-VALIDATION-DIAGNOSTICS"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-10-29-next-autonomous-milestone-and-draft-prs"
+acceptance_refs = ["docs/decisions/0014-validation-diagnostics.md"]
+evidence_refs = ["tests/configuration_workflow.rs","tests/cli.rs","docs/governance/validation-diagnostics-validation.md"]
