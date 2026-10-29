@@ -61,3 +61,7 @@ Offline configuration validation: decision `docs/decisions/0012-configuration-va
 ## 2026-10-28: TC018
 
 Trust validation and budget-fit reporting: decision `docs/decisions/0013-trust-budget-checks.md`; validation `docs/governance/trust-budget-validation.md`.
+
+## 2026-10-29: TC019
+
+Validation diagnostics and configuration acceptance: decision docs/decisions/0014-validation-diagnostics.md; validation docs/governance/validation-diagnostics-validation.md.

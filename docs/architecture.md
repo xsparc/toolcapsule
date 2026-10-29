@@ -107,3 +107,8 @@ Add read-only `limits-check --limits` and `policy-check --policy` commands. Limi
 ### Trust validation and budget-fit reporting
 
 Implement the two TC018 handoff tasks. `trust-check --trust` reads at most 64 KiB and validates a JSON object of 1–64-byte key IDs and hex-encoded 32-byte Ed25519 public keys. A custom Serde map visitor rejects duplicate decoded IDs; trailing data, malformed keys and weak points are rejected. Empty stores pass and report deny-all. `budget-fit --limits --policy` validates both inputs and reports fixed field names exceeding host maxima, sharing the runtime upper-bound comparisons. Inputs and trust files are never rewritten; summaries omit key material, IDs and paths. See `docs/decisions/0013-trust-budget-checks.md` for acceptance and limits.
+
+## Validation diagnostics and configuration acceptance
+
+Add --json-errors to the four existing checks and a temporary synthetic configuration workflow tested by the current CI matrix.
+See [TC019 decision](decisions/0014-validation-diagnostics.md) for compatibility, acceptance and limits.
