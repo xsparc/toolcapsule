@@ -136,3 +136,7 @@ Omit `--out` to print JSON. `policy-template` without `--limits` uses the defaul
 ### Offline configuration validation
 
 Successful checks print version-1 JSON with kind and valid=true, then exit 0. Policy checks also report allowed_tool_count and denies_all_tools. Errors exit 2 without success JSON. Files are read only and input values are not printed. Policy names use the manifest grammar: 1–64 ASCII lowercase letters, digits or hyphens; duplicates are rejected. See [the workflow](docs/configuration-validation.md).
+
+### Trust validation and budget-fit reporting
+
+trust-check exits 0 for a valid store and prints schema_version, kind, valid, key_count and denies_all_signers; empty maps are valid. budget-fit prints fits, exceeded_fields and package_admission=not_checked. It exits 0 when budgets fit, 1 when valid budgets exceed policy, and 2 for invalid input/I/O without report JSON. Limits and policy inputs retain the 4096-byte and 64-KiB caps. See [the workflow](docs/trust-budget-checks.md).

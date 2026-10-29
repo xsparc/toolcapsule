@@ -8,6 +8,7 @@ pub mod package;
 pub mod pool;
 pub mod runtime;
 pub mod storage;
+pub mod trust_check;
 
 pub use package::{
     Capabilities, Error, Limits, Manifest, Policy, SignedManifest, TrustStore, VerifiedPackage,

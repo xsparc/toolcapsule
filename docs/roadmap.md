@@ -96,8 +96,7 @@ Acceptance: Generated limits round-trip through the existing contract. Generated
 
 ## TC017: Offline configuration validation
 
-Subsequent five-item handoff: [next milestone](next-milestone.md). TC018 owns
-offline trust validation and budget-fit reporting; these remain planned.
+The [recorded handoff](governance/handoff-2026-10-27.md) is implemented in TC018.
 
 Delegated 2026-10-27 milestone. Decision: `docs/decisions/0012-configuration-validation.md`.
 
@@ -105,3 +104,14 @@ Delegated 2026-10-27 milestone. Decision: `docs/decisions/0012-configuration-val
 2. Validate policy files offline with explicit empty-allowlist reporting.
 
 Acceptance: Generated defaults pass both commands; invalid, unknown-field and oversized files fail with exit 2 and no success JSON. Policy checks reject duplicate/unusable names, zero component caps and invalid limits. Valid empty allowlists report denies_all_tools=true. Inputs stay unchanged and diagnostics do not echo supplied fields.
+
+## TC018: Trust validation and budget-fit reporting
+
+Following iteration: [TC019 and SW026 handoff](next-milestone.md), planned only.
+
+Delegated 2026-10-28 milestone. Decision: `docs/decisions/0013-trust-budget-checks.md`.
+
+1. Validate trust-store IDs and public keys offline.
+2. Report requested budget fit using shared admission comparisons.
+
+Acceptance: Empty and valid trust maps pass; duplicate/escaped-equivalent IDs, malformed types, invalid/weak/incorrect-length keys, trailing data and oversized inputs fail. Equality fits; each exceeded budget matches actual package denial. CLI differentiates fit, non-fit and invalid input, reports no raw input and leaves files unchanged.
