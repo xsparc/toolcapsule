@@ -65,3 +65,7 @@ Trust validation and budget-fit reporting: decision `docs/decisions/0013-trust-b
 ## 2026-10-29: TC019
 
 Validation diagnostics and configuration acceptance: decision docs/decisions/0014-validation-diagnostics.md; validation docs/governance/validation-diagnostics-validation.md.
+
+## 2026-10-31: TC020
+
+Configuration contracts: decision `docs/decisions/0015-configuration-contracts.md`; verification `docs/governance/configuration-contracts-validation.md`.

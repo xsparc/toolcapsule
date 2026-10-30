@@ -459,3 +459,31 @@ roadmap_refs = ["docs/roadmap.md"]
 approval_ref = "conversation:2026-10-29-next-autonomous-milestone-and-draft-prs"
 acceptance_refs = ["docs/decisions/0014-validation-diagnostics.md"]
 evidence_refs = ["tests/configuration_workflow.rs","tests/cli.rs","docs/governance/validation-diagnostics-validation.md"]
+
+[[research_decisions]]
+id = "RD-CONFIGURATION-CONTRACTS"
+disposition = "adopted"
+source_refs = ["docs/governance/configuration-contracts-direction.md"]
+design_refs = ["docs/decisions/0015-configuration-contracts.md"]
+
+[[requirements]]
+id = "REQ-CONFIGURATION-CONTRACTS"
+statement = "Configuration contracts with bounded input, explicit direction and limited evidence claims."
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0015-configuration-contracts.md"]
+risk_refs = ["docs/configuration-contracts.md"]
+implementation_refs = ["src/configuration.rs", "src/main.rs", "schemas/validation.schema.json"]
+verification_refs = ["tests/configuration_check.rs", "tests/configuration_workflow.rs"]
+validation_refs = ["docs/governance/configuration-contracts-validation.md"]
+
+[[work_items]]
+id = "TC020-CONFIGURATION-CONTRACTS"
+title = "Configuration contracts"
+status = "closed"
+requirement_ids = ["REQ-CONFIGURATION-CONTRACTS"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-10-31-next-autonomous-milestone-and-draft-prs"
+acceptance_refs = ["docs/decisions/0015-configuration-contracts.md"]
+evidence_refs = ["tests/configuration_check.rs", "tests/configuration_workflow.rs", "docs/governance/configuration-contracts-validation.md"]

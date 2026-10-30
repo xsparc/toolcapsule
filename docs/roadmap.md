@@ -123,3 +123,9 @@ Add --json-errors to the four existing checks and a temporary synthetic configur
 Decision: docs/decisions/0014-validation-diagnostics.md.
 Acceptance: Fixed JSON codes and unchanged 0/1/2 exits; no input echo; synthetic signed fixture preflight with explicit allowlist and budget denials.
 Next iteration: docs/next-milestone.md (planned only).
+
+## TC020: Configuration contracts
+
+Implemented the saved 2026-10-29 handoff. Decision: `docs/decisions/0015-configuration-contracts.md`.
+Acceptance and limitations: `docs/governance/configuration-contracts-validation.md`.
+Next five tasks: `docs/next-milestone.md` (planned only).

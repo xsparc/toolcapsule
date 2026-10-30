@@ -112,3 +112,8 @@ Implement the two TC018 handoff tasks. `trust-check --trust` reads at most 64 Ki
 
 Add --json-errors to the four existing checks and a temporary synthetic configuration workflow tested by the current CI matrix.
 See [TC019 decision](decisions/0014-validation-diagnostics.md) for compatibility, acceptance and limits.
+
+## Configuration contracts
+
+TC020 adds bounded offline contracts and verification without changing runtime
+execution authority. See the [accepted decision](decisions/0015-configuration-contracts.md) and its explicit evidence limits.
