@@ -69,3 +69,63 @@ Acceptance: Round-trip authentication, tampering and wrong-domain rejection, rev
 The delegated 2026-10-25 scope closes a bounded workflow gap on current main.
 Decision: `docs/decisions/0009-package-preflight.md`.
 Acceptance: Real WASI fixture identity and profile; malformed source, absent command export and unresolved imports fail; valid signed invalid source distinguishes verify from preflight; trust/digest denial precedes compilation; trapping start and command code are not run.
+
+## TC014: Wasmtime security patch
+
+Pin the current 49.x line to 49.0.4 for the published AArch64 compiler advisory.
+Acceptance includes dependency resolution, a new runtime profile, rejection of
+legacy-profile replay and the existing isolation, preflight, cache, pool,
+checkpoint and governance regressions. The guest ABI and capability policy stay
+within the existing design. No Wasmtime 50 migration or new external capability
+is included.
+
+## TC015: Explicit signed resource budgets
+
+The delegated 2026-10-26 scope extends an existing admitted contract.
+Decision: `docs/decisions/0010-signed-resource-budgets.md`.
+Acceptance: Custom limits appear unchanged in authenticated preflight output; input enforcement rejects oversized invocation; stricter host policy rejects the package; unknown/missing/zero/too-small/oversized limits fail before output; default packaging and non-overwrite behavior remain covered.
+
+## TC016: Configuration templates
+
+Delegated 2026-10-27 milestone. Decision: `docs/decisions/0011-configuration-templates.md`.
+
+1. Generate validated limits JSON for `pack --limits`.
+2. Generate deny-by-default host-policy JSON, optionally using explicit limits.
+
+Acceptance: Generated limits round-trip through the existing contract. Generated policy denies a signed package until an operator explicitly adds its tool to the allowlist. Invalid and oversized limits produce no output; existing files are never overwritten.
+
+## TC017: Offline configuration validation
+
+The [recorded handoff](governance/handoff-2026-10-27.md) is implemented in TC018.
+
+Delegated 2026-10-27 milestone. Decision: `docs/decisions/0012-configuration-validation.md`.
+
+1. Validate limits files offline.
+2. Validate policy files offline with explicit empty-allowlist reporting.
+
+Acceptance: Generated defaults pass both commands; invalid, unknown-field and oversized files fail with exit 2 and no success JSON. Policy checks reject duplicate/unusable names, zero component caps and invalid limits. Valid empty allowlists report denies_all_tools=true. Inputs stay unchanged and diagnostics do not echo supplied fields.
+
+## TC018: Trust validation and budget-fit reporting
+
+TC019 implements the [retained handoff](governance/handoff-2026-10-28.md).
+
+Delegated 2026-10-28 milestone. Decision: `docs/decisions/0013-trust-budget-checks.md`.
+
+1. Validate trust-store IDs and public keys offline.
+2. Report requested budget fit using shared admission comparisons.
+
+Acceptance: Empty and valid trust maps pass; duplicate/escaped-equivalent IDs, malformed types, invalid/weak/incorrect-length keys, trailing data and oversized inputs fail. Equality fits; each exceeded budget matches actual package denial. CLI differentiates fit, non-fit and invalid input, reports no raw input and leaves files unchanged.
+
+## TC019: Validation diagnostics and configuration acceptance
+
+Add --json-errors to the four existing checks and a temporary synthetic configuration workflow tested by the current CI matrix.
+
+Decision: docs/decisions/0014-validation-diagnostics.md.
+Acceptance: Fixed JSON codes and unchanged 0/1/2 exits; no input echo; synthetic signed fixture preflight with explicit allowlist and budget denials.
+Next iteration: docs/next-milestone.md (planned only).
+
+## TC020: Configuration contracts
+
+Implemented the saved 2026-10-29 handoff. Decision: `docs/decisions/0015-configuration-contracts.md`.
+Acceptance and limitations: `docs/governance/configuration-contracts-validation.md`.
+Next five tasks: `docs/next-milestone.md` (planned only).

@@ -49,3 +49,18 @@ Optional signed audit checkpoints authenticate retained anchors using a separate
 selected host trust store. Verification still requires independently retained
 freshness evidence; signatures do not prevent replay of older valid checkpoints.
 See [checkpoint custody](audit-checkpoints.md).
+
+## Runtime security patch, 2026-10-26
+
+Use Wasmtime/wasmtime-wasi 49.0.4. The previous 49.0.3 pin is affected by
+[RUSTSEC-2026-0379](https://rustsec.org/advisories/RUSTSEC-2026-0379.html):
+Cranelift on AArch64 can miscompile a large branch table and permit a sandbox
+escape. The [upstream 49.0.4 release](https://github.com/bytecodealliance/wasmtime/releases/tag/v49.0.4)
+contains the patch. Guest capabilities and signatures do not replace an engine
+security update.
+
+The runtime profile now identifies 49.0.4. Preserve old receipts and audit
+checkpoints as historical evidence; do not relabel them with the new profile.
+Replay rejects 49.0.3 receipts. Rebuild and restart integrating workers so old
+prepared tools, cache entries and retained handles cannot keep the old engine
+alive. This change does not migrate persisted evidence or deploy workers.

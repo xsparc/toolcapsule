@@ -61,17 +61,47 @@ impl Default for Limits {
 }
 
 impl Limits {
+    /// Validate budget shape without granting authority from any host policy.
+    pub fn validate(&self) -> Result<(), Error> {
+        if self.admitted_by(self) {
+            Ok(())
+        } else {
+            Err(Error::Policy)
+        }
+    }
+
     fn admitted_by(&self, max: &Self) -> bool {
         self.fuel > 0
-            && self.fuel <= max.fuel
             && self.memory_bytes >= 65536
-            && self.memory_bytes <= max.memory_bytes
             && self.timeout_ms >= 10
-            && self.timeout_ms <= max.timeout_ms
             && self.input_bytes > 0
-            && self.input_bytes <= max.input_bytes
             && self.output_bytes > 0
-            && self.output_bytes <= max.output_bytes
+            && self
+                .exceeded_checks(max)
+                .iter()
+                .all(|(_, exceeded)| !exceeded)
+    }
+
+    fn exceeded_checks(&self, max: &Self) -> [(&'static str, bool); 5] {
+        [
+            ("fuel", self.fuel > max.fuel),
+            ("memory_bytes", self.memory_bytes > max.memory_bytes),
+            ("timeout_ms", self.timeout_ms > max.timeout_ms),
+            ("input_bytes", self.input_bytes > max.input_bytes),
+            ("output_bytes", self.output_bytes > max.output_bytes),
+        ]
+    }
+
+    /// Compare valid budgets using the same upper-bound checks as admission.
+    /// A fitting budget does not authenticate or authorize a package.
+    pub fn exceeded_fields(&self, max: &Self) -> Result<Vec<&'static str>, Error> {
+        self.validate()?;
+        max.validate()?;
+        Ok(self
+            .exceeded_checks(max)
+            .into_iter()
+            .filter_map(|(field, exceeded)| exceeded.then_some(field))
+            .collect())
     }
 }
 
@@ -115,14 +145,8 @@ pub struct Manifest {
 
 impl Manifest {
     pub fn validate(&self) -> Result<(), Error> {
-        let valid_name = !self.name.is_empty()
-            && self.name.len() <= 64
-            && self
-                .name
-                .bytes()
-                .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-');
         if self.schema_version != 1
-            || !valid_name
+            || !valid_tool_name(&self.name)
             || self.version.is_empty()
             || self.version.len() > 64
             || self.description.len() > 512
@@ -176,6 +200,34 @@ pub struct Policy {
     pub max_limits: Limits,
     pub max_component_bytes: usize,
     pub allowed_tools: Vec<String>,
+}
+
+fn valid_tool_name(name: &str) -> bool {
+    !name.is_empty()
+        && name.len() <= 64
+        && name
+            .bytes()
+            .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
+}
+
+impl Policy {
+    /// Check configuration authoring errors without admitting any package.
+    /// An empty allowlist is valid and denies every tool.
+    pub fn validate(&self) -> Result<(), Error> {
+        self.max_limits.validate()?;
+        if self.max_component_bytes == 0
+            || self.allowed_tools.iter().any(|name| !valid_tool_name(name))
+            || self
+                .allowed_tools
+                .iter()
+                .collect::<std::collections::BTreeSet<_>>()
+                .len()
+                != self.allowed_tools.len()
+        {
+            return Err(Error::Policy);
+        }
+        Ok(())
+    }
 }
 
 impl Default for Policy {

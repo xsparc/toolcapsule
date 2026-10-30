@@ -44,3 +44,28 @@ Signed audit checkpoints extends the merged evidence workflow. See the accepted 
 
 Package preflight: accepted decision `docs/decisions/0009-package-preflight.md`;
 verification record `docs/governance/preflight-validation.md`.
+
+## 2026-10-26: TC015
+
+Explicit signed resource budgets: decision `docs/decisions/0010-signed-resource-budgets.md`;
+verification `docs/governance/budget-validation.md`.
+
+## 2026-10-27: TC016
+
+Configuration templates: decision `docs/decisions/0011-configuration-templates.md`; validation `docs/governance/template-validation.md`.
+
+## 2026-10-27: TC017
+
+Offline configuration validation: decision `docs/decisions/0012-configuration-validation.md`; validation `docs/governance/configuration-validation.md`.
+
+## 2026-10-28: TC018
+
+Trust validation and budget-fit reporting: decision `docs/decisions/0013-trust-budget-checks.md`; validation `docs/governance/trust-budget-validation.md`.
+
+## 2026-10-29: TC019
+
+Validation diagnostics and configuration acceptance: decision docs/decisions/0014-validation-diagnostics.md; validation docs/governance/validation-diagnostics-validation.md.
+
+## 2026-10-31: TC020
+
+Configuration contracts: decision `docs/decisions/0015-configuration-contracts.md`; verification `docs/governance/configuration-contracts-validation.md`.

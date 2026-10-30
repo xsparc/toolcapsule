@@ -8,7 +8,7 @@ Run AI-agent tools as signed WebAssembly components with explicit capabilities,
 resource budgets, audit receipts, and deterministic replay. Use the Rust library,
 CLI, or MCP stdio adapter. MIT licensed; no hosted service is required.
 
-The MVP runs **WASI 0.2 command components** on pinned Wasmtime 49.0.3. It admits
+The MVP runs **WASI 0.2 command components** on pinned Wasmtime 49.0.4. It admits
 pure transformations: no host files, environment, sockets, secrets, or
 subprocesses. Unsupported grants fail closed. Clocks are fixed and random bytes
 are seeded fixtures. WASI 0.3 and brokered external capabilities are on the
@@ -125,3 +125,20 @@ key: see [signed checkpoint usage](docs/audit-checkpoints.md#authenticate-retain
 
 Check package compilation and WASI command compatibility before execution with
 [`preflight`](docs/preflight.md).
+
+Package authors can select [explicit signed resource budgets](docs/resource-budgets.md)
+with `pack --limits`; host policy remains authoritative.
+
+### Configuration templates
+
+Omit `--out` to print JSON. `policy-template` without `--limits` uses the default budgets. The generated `allowed_tools` array is empty; explicitly edit it before admitting a tool. The component size cap remains 16 MiB. `limits-template` supplies the complete input shape accepted by `pack --limits`. Neither command creates signing keys or configures trust. See [the workflow](docs/configuration-templates.md).
+
+### Offline configuration validation
+
+Successful checks print version-1 JSON with kind and valid=true, then exit 0. Policy checks also report allowed_tool_count and denies_all_tools. Errors exit 2 without success JSON. Files are read only and input values are not printed. Policy names use the manifest grammar: 1–64 ASCII lowercase letters, digits or hyphens; duplicates are rejected. See [the workflow](docs/configuration-validation.md).
+
+### Trust validation and budget-fit reporting
+
+trust-check exits 0 for a valid store and prints schema_version, kind, valid, key_count and denies_all_signers; empty maps are valid. budget-fit prints fits, exceeded_fields and package_admission=not_checked. It exits 0 when budgets fit, 1 when valid budgets exceed policy, and 2 for invalid input/I/O without report JSON. Limits and policy inputs retain the 4096-byte and 64-KiB caps. See [the workflow](docs/trust-budget-checks.md).
+
+See [configuration contracts](docs/configuration-contracts.md) for the latest offline review workflow and evidence limits.
