@@ -26,6 +26,17 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    /// Print the versioned JSON Schema for validation diagnostics and summaries.
+    ValidationSchema,
+    /// Check explicit limits, policy and trust independently, then compare budgets.
+    ConfigurationCheck {
+        #[arg(long)]
+        limits: PathBuf,
+        #[arg(long)]
+        policy: PathBuf,
+        #[arg(long)]
+        trust: PathBuf,
+    },
     /// Check public trust-store encoding without loading signing seeds or executing tools.
     TrustCheck {
         #[arg(long)]
@@ -237,22 +248,15 @@ async fn main() -> std::process::ExitCode {
         _ => None,
     };
     match execute(cli).await {
-        Ok(true) => std::process::ExitCode::SUCCESS,
-        Ok(false) => {
-            if let Some(kind) = diagnostic {
+        Ok(status) => {
+            if let Some(kind) = diagnostic.filter(|_| status == 1) {
                 json_error(kind, "budget_exceeded");
             }
-            std::process::ExitCode::FAILURE
+            std::process::ExitCode::from(status)
         }
         Err(error) => {
             if let Some(kind) = diagnostic {
-                let code = match error {
-                    Error::Format => "invalid_format",
-                    Error::Policy => "invalid_configuration",
-                    Error::InputLimit => "input_too_large",
-                    Error::Io => "io_error",
-                    _ => "validation_failed",
-                };
+                let code = configuration::error_code(&error);
                 json_error(kind, code);
             } else {
                 eprintln!("toolcapsule: {error}");
@@ -268,8 +272,18 @@ fn json_error(kind: &str, code: &str) {
     let _ = writeln!(io::stderr().lock(), "{value}");
 }
 
-async fn execute(cli: Cli) -> Result<bool, Error> {
+async fn execute(cli: Cli) -> Result<u8, Error> {
     match cli.command {
+        Command::ValidationSchema => print_json(&configuration::schema())?,
+        Command::ConfigurationCheck {
+            limits,
+            policy,
+            trust,
+        } => {
+            let (report, status) = configuration::check(&limits, &policy, &trust);
+            print_json(&report)?;
+            return Ok(status);
+        }
         Command::TrustCheck { trust, .. } => {
             let count =
                 trust_check::check_trust(&read_file(&trust, trust_check::MAX_TRUST_BYTES)?)?;
@@ -288,7 +302,7 @@ async fn execute(cli: Cli) -> Result<bool, Error> {
                 &serde_json::json!({"schema_version": 1, "kind": "budget_fit",
                 "fits": fits, "exceeded_fields": exceeded, "package_admission": "not_checked"}),
             )?;
-            return Ok(fits);
+            return Ok(u8::from(!fits));
         }
         Command::LimitsCheck { limits, .. } => {
             read_json::<Limits>(&limits, 4096)?.validate()?;
@@ -409,7 +423,7 @@ async fn execute(cli: Cli) -> Result<bool, Error> {
                 &serde_json::json!({"outcome":result.outcome,"stdout":String::from_utf8_lossy(&result.stdout),
                 "stderr":String::from_utf8_lossy(&result.stderr),"fuel_consumed":result.fuel_consumed,"receipt":record}),
             )?;
-            return Ok(result.outcome == Outcome::Success);
+            return Ok(u8::from(result.outcome != Outcome::Success));
         }
         Command::Replay { package, receipt } => {
             let tool = package.prepare()?;
@@ -490,5 +504,5 @@ async fn execute(cli: Cli) -> Result<bool, Error> {
             )?;
         }
     }
-    Ok(true)
+    Ok(0)
 }
