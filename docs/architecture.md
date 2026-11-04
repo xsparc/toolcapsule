@@ -117,3 +117,8 @@ See [TC019 decision](decisions/0014-validation-diagnostics.md) for compatibility
 
 TC020 adds bounded offline contracts and verification without changing runtime
 execution authority. See the [accepted decision](decisions/0015-configuration-contracts.md) and its explicit evidence limits.
+
+## Retained configuration verification
+
+TC021 validates retained evidence and compares it with explicit sources without
+execution. See [the accepted decision](decisions/0016-retained-configuration.md).

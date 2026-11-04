@@ -129,3 +129,8 @@ Next iteration: docs/next-milestone.md (planned only).
 Implemented the saved 2026-10-29 handoff. Decision: `docs/decisions/0015-configuration-contracts.md`.
 Acceptance and limitations: `docs/governance/configuration-contracts-validation.md`.
 Next five tasks: `docs/next-milestone.md` (planned only).
+
+## TC021: Retained configuration verification
+
+Implements the retained handoff from 2026-10-31. Design: `docs/decisions/0016-retained-configuration.md`.
+Acceptance: `docs/governance/retained-configuration-validation.md`. Next tasks: `docs/next-milestone.md`.

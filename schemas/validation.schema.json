@@ -13,7 +13,8 @@
             "limits",
             "policy",
             "trust",
-            "budget_fit"
+            "budget_fit",
+            "configuration_result"
           ]
         },
         "error": {
@@ -336,6 +337,54 @@
         "checks",
         "budget_fit",
         "package_admission"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "kind": {
+          "const": "configuration_result"
+        },
+        "valid": {
+          "const": true
+        },
+        "interpretation": {
+          "const": "local_consistency_only"
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "valid",
+        "interpretation"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "kind": {
+          "const": "configuration_result"
+        },
+        "verified": {
+          "const": true
+        },
+        "interpretation": {
+          "const": "local_source_consistency_only"
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "verified",
+        "interpretation"
       ],
       "additionalProperties": false
     }

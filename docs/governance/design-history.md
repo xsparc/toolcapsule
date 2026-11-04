@@ -69,3 +69,7 @@ Validation diagnostics and configuration acceptance: decision docs/decisions/001
 ## 2026-10-31: TC020
 
 Configuration contracts: decision `docs/decisions/0015-configuration-contracts.md`; verification `docs/governance/configuration-contracts-validation.md`.
+
+## 2026-11-04: TC021
+
+Retained configuration verification: `docs/decisions/0016-retained-configuration.md`; verification `docs/governance/retained-configuration-validation.md`.

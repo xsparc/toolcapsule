@@ -26,6 +26,22 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    /// Validate a retained combined configuration result without its source files.
+    ConfigurationResultCheck {
+        #[arg(long)]
+        report: PathBuf,
+    },
+    /// Recompute a retained summary against explicit configuration sources.
+    ConfigurationResultVerify {
+        #[arg(long)]
+        report: PathBuf,
+        #[arg(long)]
+        limits: PathBuf,
+        #[arg(long)]
+        policy: PathBuf,
+        #[arg(long)]
+        trust: PathBuf,
+    },
     /// Print the versioned JSON Schema for validation diagnostics and summaries.
     ValidationSchema,
     /// Check explicit limits, policy and trust independently, then compare budgets.
@@ -233,6 +249,9 @@ fn print_json(value: &impl serde::Serialize) -> Result<(), Error> {
 async fn main() -> std::process::ExitCode {
     let cli = Cli::parse();
     let diagnostic = match &cli.command {
+        Command::ConfigurationResultCheck { .. } | Command::ConfigurationResultVerify { .. } => {
+            Some("configuration_result")
+        }
         Command::TrustCheck {
             json_errors: true, ..
         } => Some("trust"),
@@ -274,6 +293,28 @@ fn json_error(kind: &str, code: &str) {
 
 async fn execute(cli: Cli) -> Result<u8, Error> {
     match cli.command {
+        Command::ConfigurationResultCheck { report } => {
+            configuration::read_result(&read_file(&report, configuration::MAX_RESULT_BYTES)?)?;
+            print_json(
+                &serde_json::json!({"schema_version":1,"kind":"configuration_result","valid":true,"interpretation":"local_consistency_only"}),
+            )?;
+        }
+        Command::ConfigurationResultVerify {
+            report,
+            limits,
+            policy,
+            trust,
+        } => {
+            configuration::verify_result(
+                &read_file(&report, configuration::MAX_RESULT_BYTES)?,
+                &limits,
+                &policy,
+                &trust,
+            )?;
+            print_json(
+                &serde_json::json!({"schema_version":1,"kind":"configuration_result","verified":true,"interpretation":"local_source_consistency_only"}),
+            )?;
+        }
         Command::ValidationSchema => print_json(&configuration::schema())?,
         Command::ConfigurationCheck {
             limits,
