@@ -487,3 +487,31 @@ roadmap_refs = ["docs/roadmap.md"]
 approval_ref = "conversation:2026-10-31-next-autonomous-milestone-and-draft-prs"
 acceptance_refs = ["docs/decisions/0015-configuration-contracts.md"]
 evidence_refs = ["tests/configuration_check.rs", "tests/configuration_workflow.rs", "docs/governance/configuration-contracts-validation.md"]
+
+[[research_decisions]]
+id = "RD-RETAINED-CONFIGURATION"
+disposition = "adopted"
+source_refs = ["docs/governance/retained-configuration-direction.md"]
+design_refs = ["docs/decisions/0016-retained-configuration.md"]
+
+[[requirements]]
+id = "REQ-RETAINED-CONFIGURATION"
+statement = "Retained configuration verification with bounded input, closed contracts and limited evidence claims."
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0016-retained-configuration.md"]
+risk_refs = ["docs/retained-configuration.md"]
+implementation_refs = ["src/configuration.rs", "src/main.rs", "schemas/validation.schema.json"]
+verification_refs = ["tests/retained_configuration.rs"]
+validation_refs = ["docs/governance/retained-configuration-validation.md"]
+
+[[work_items]]
+id = "TC021-RETAINED-CONFIGURATION"
+title = "Retained configuration verification"
+status = "closed"
+requirement_ids = ["REQ-RETAINED-CONFIGURATION"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-11-04-next-autonomous-milestone-and-draft-prs"
+acceptance_refs = ["docs/decisions/0016-retained-configuration.md"]
+evidence_refs = ["tests/retained_configuration.rs", "docs/governance/retained-configuration-validation.md"]
