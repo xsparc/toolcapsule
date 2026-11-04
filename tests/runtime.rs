@@ -470,3 +470,20 @@ async fn real_wasi_command_denies_host_access_and_cancels_host_waits() {
     assert!(flood.stdout.len() <= 65536);
     assert!(flood.stderr.len() <= 65536);
 }
+
+#[tokio::test]
+async fn receipts_from_previous_engine_profile_are_not_replayed() {
+    const LEGACY_PROFILE: &str = "toolcapsule-v1-wasmtime-49.0.3-wasip2-fixed-clock-cycle-rng";
+    let tool = tool(command("i32.const 0", ""), Limits::default());
+    let input = b"profile-bound replay";
+    let result = tool.run(input, 42).await.unwrap();
+    assert_eq!(result.outcome, Outcome::Success);
+    let mut receipt = Receipt::new(&tool, input, 42, &result);
+    assert_ne!(receipt.profile, LEGACY_PROFILE);
+    receipt.replay(&tool, input).await.unwrap();
+    receipt.profile = LEGACY_PROFILE.into();
+    assert!(matches!(
+        receipt.replay(&tool, input).await,
+        Err(Error::Replay)
+    ));
+}

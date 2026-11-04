@@ -12,7 +12,7 @@ use wasmtime_wasi::p2::{
 use wasmtime_wasi::random::Deterministic;
 use wasmtime_wasi::{WasiCtx, WasiCtxView, WasiView};
 
-pub const PROFILE: &str = "toolcapsule-v1-wasmtime-49.0.3-wasip2-fixed-clock-cycle-rng";
+pub const PROFILE: &str = "toolcapsule-v1-wasmtime-49.0.4-wasip2-fixed-clock-cycle-rng";
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]

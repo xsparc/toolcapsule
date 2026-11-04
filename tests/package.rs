@@ -26,6 +26,71 @@ fn envelope(manifest: &Manifest, key: &SigningKey) -> Vec<u8> {
 }
 
 #[test]
+fn budget_fit_matches_each_runtime_admission_boundary() {
+    let (mut manifest, key, trust, policy) = fixture();
+    assert!(
+        manifest
+            .limits
+            .exceeded_fields(&policy.max_limits)
+            .unwrap()
+            .is_empty()
+    );
+    for field in [
+        "fuel",
+        "memory_bytes",
+        "timeout_ms",
+        "input_bytes",
+        "output_bytes",
+    ] {
+        manifest.limits = policy.max_limits.clone();
+        match field {
+            "fuel" => manifest.limits.fuel += 1,
+            "memory_bytes" => manifest.limits.memory_bytes += 1,
+            "timeout_ms" => manifest.limits.timeout_ms += 1,
+            "input_bytes" => manifest.limits.input_bytes += 1,
+            _ => manifest.limits.output_bytes += 1,
+        }
+        assert_eq!(
+            manifest.limits.exceeded_fields(&policy.max_limits).unwrap(),
+            vec![field]
+        );
+        assert!(matches!(
+            VerifiedPackage::verify(
+                &envelope(&manifest, &key),
+                b"component".to_vec(),
+                &trust,
+                &policy
+            ),
+            Err(Error::Policy)
+        ));
+    }
+    manifest.limits.fuel = 0;
+    assert!(manifest.limits.exceeded_fields(&policy.max_limits).is_err());
+}
+
+#[test]
+fn policy_authoring_validation_rejects_unusable_and_duplicate_grants() {
+    assert!(Policy::default().validate().is_ok());
+    let (_, _, _, mut policy) = fixture();
+    assert!(policy.validate().is_ok());
+    for names in [
+        vec!["".into()],
+        vec!["Bad/name".into()],
+        vec!["x".repeat(65)],
+        vec!["echo".into(), "echo".into()],
+    ] {
+        policy.allowed_tools = names;
+        assert!(policy.validate().is_err());
+    }
+    policy = Policy::default();
+    policy.max_component_bytes = 0;
+    assert!(policy.validate().is_err());
+    policy = Policy::default();
+    policy.max_limits.fuel = 0;
+    assert!(policy.validate().is_err());
+}
+
+#[test]
 fn verifies_signature_digest_and_host_admission() {
     let (manifest, key, trust, policy) = fixture();
     let package = VerifiedPackage::verify(

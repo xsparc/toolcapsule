@@ -2,7 +2,7 @@
 
 ToolCapsule is an embeddable Rust library with thin CLI and MCP adapters.
 The initial contract is a WASI 0.2 command: UTF-8 input on stdin, bounded stdout
-and stderr, and an exit result. Wasmtime is pinned to stable 49.0.3 in the
+and stderr, and an exit result. Wasmtime is pinned to stable 49.0.4 in the
 execution slice. WASI 0.3 async integration is a subsequent compatibility slice.
 
 ## Trust and execution boundaries
@@ -91,3 +91,29 @@ ADR 0009 exposes existing preparation as a read-only compatibility check after
 signature/digest/policy admission. Compilation and interface checks precede any
 store creation or guest execution. Reports are descriptive, not authorization
 for a later run. See [preflight](preflight.md).
+
+ADR 0010 lets package authors supply the existing closed Limits contract through
+pack --limits. Shape validation is independent of operator admission; signed
+requested budgets cannot override host policy. See [resource budgets](resource-budgets.md).
+
+### Configuration templates
+
+Add `limits-template` for the existing validated default Limits contract and `policy-template [--limits limits.json]` for a host policy with an empty tool allowlist. Both print JSON by default or exclusively create `--out` files. Custom limits are bounded to 4096 bytes and validated before output. No keys, trust stores or guest execution are involved. See `docs/decisions/0011-configuration-templates.md` for acceptance and limits.
+
+### Offline configuration validation
+
+Add read-only `limits-check --limits` and `policy-check --policy` commands. Limits input is capped at 4096 bytes and policy input at 64 KiB, with strict existing JSON parsing. Limits reuse Limits::validate. Policy::validate checks valid maximum budgets, a positive component cap, valid manifest tool names and unique allowlist entries; an empty allowlist remains valid. Return fixed version-1 JSON summaries without input values or paths. Validation does not load trust or signing keys, compile or execute code, or modify files. See `docs/decisions/0012-configuration-validation.md` for acceptance and limits.
+
+### Trust validation and budget-fit reporting
+
+Implement the two TC018 handoff tasks. `trust-check --trust` reads at most 64 KiB and validates a JSON object of 1–64-byte key IDs and hex-encoded 32-byte Ed25519 public keys. A custom Serde map visitor rejects duplicate decoded IDs; trailing data, malformed keys and weak points are rejected. Empty stores pass and report deny-all. `budget-fit --limits --policy` validates both inputs and reports fixed field names exceeding host maxima, sharing the runtime upper-bound comparisons. Inputs and trust files are never rewritten; summaries omit key material, IDs and paths. See `docs/decisions/0013-trust-budget-checks.md` for acceptance and limits.
+
+## Validation diagnostics and configuration acceptance
+
+Add --json-errors to the four existing checks and a temporary synthetic configuration workflow tested by the current CI matrix.
+See [TC019 decision](decisions/0014-validation-diagnostics.md) for compatibility, acceptance and limits.
+
+## Configuration contracts
+
+TC020 adds bounded offline contracts and verification without changing runtime
+execution authority. See the [accepted decision](decisions/0015-configuration-contracts.md) and its explicit evidence limits.

@@ -81,6 +81,281 @@ fn package(command: &str) -> Vec<&str> {
 }
 
 #[test]
+fn trust_and_budget_checks_are_read_only_and_distinguish_nonfit_from_invalid() {
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(dir.path().join("trust.json"), b"{}").unwrap();
+    let result = call(dir.path(), &["trust-check", "--trust", "trust.json"], b"");
+    assert!(result.status.success());
+    let value: serde_json::Value = serde_json::from_slice(&result.stdout).unwrap();
+    assert_eq!(value["key_count"], 0);
+    assert_eq!(value["denies_all_signers"], true);
+    std::fs::write(
+        dir.path().join("trust.json"),
+        b"{\"private_marker\":\"bad\"}",
+    )
+    .unwrap();
+    let result = call(dir.path(), &["trust-check", "--trust", "trust.json"], b"");
+    assert_eq!(result.status.code(), Some(2));
+    assert!(result.stdout.is_empty());
+    assert!(!String::from_utf8_lossy(&result.stderr).contains("private_marker"));
+    assert!(
+        call(
+            dir.path(),
+            &["limits-template", "--out", "limits.json"],
+            b""
+        )
+        .status
+        .success()
+    );
+    assert!(
+        call(
+            dir.path(),
+            &["policy-template", "--out", "policy.json"],
+            b""
+        )
+        .status
+        .success()
+    );
+    let args = [
+        "budget-fit",
+        "--limits",
+        "limits.json",
+        "--policy",
+        "policy.json",
+    ];
+    let result = call(dir.path(), &args, b"");
+    assert!(result.status.success());
+    let value: serde_json::Value = serde_json::from_slice(&result.stdout).unwrap();
+    assert_eq!(value["fits"], true);
+    assert_eq!(value["package_admission"], "not_checked");
+    let mut limits = toolcapsule::Limits::default();
+    limits.fuel += 1;
+    let bytes = serde_json::to_vec(&limits).unwrap();
+    std::fs::write(dir.path().join("limits.json"), &bytes).unwrap();
+    let result = call(dir.path(), &args, b"");
+    assert_eq!(result.status.code(), Some(1));
+    let value: serde_json::Value = serde_json::from_slice(&result.stdout).unwrap();
+    assert_eq!(value["exceeded_fields"], serde_json::json!(["fuel"]));
+    assert_eq!(
+        std::fs::read(dir.path().join("limits.json")).unwrap(),
+        bytes
+    );
+    std::fs::write(dir.path().join("limits.json"), b"{}").unwrap();
+    let result = call(dir.path(), &args, b"");
+    assert_eq!(result.status.code(), Some(2));
+    assert!(result.stdout.is_empty());
+    assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 3);
+}
+
+#[test]
+fn configuration_checks_are_bounded_read_only_and_do_not_echo_input() {
+    let dir = tempfile::tempdir().unwrap();
+    for (template, check, option, filename) in [
+        ("limits-template", "limits-check", "--limits", "limits.json"),
+        ("policy-template", "policy-check", "--policy", "policy.json"),
+    ] {
+        assert!(
+            call(dir.path(), &[template, "--out", filename], b"")
+                .status
+                .success()
+        );
+        let before = std::fs::read(dir.path().join(filename)).unwrap();
+        let output = call(dir.path(), &[check, option, filename], b"");
+        assert!(output.status.success());
+        let value: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+        assert_eq!(value["valid"], true);
+        assert_eq!(value["schema_version"], 1);
+        if check == "policy-check" {
+            assert_eq!(value["denies_all_tools"], true);
+            assert_eq!(value["allowed_tool_count"], 0);
+        }
+        assert_eq!(std::fs::read(dir.path().join(filename)).unwrap(), before);
+        for invalid in [b"{\"private_marker\":1}".to_vec(), vec![b' '; 65537]] {
+            std::fs::write(dir.path().join(filename), invalid).unwrap();
+            let output = call(dir.path(), &[check, option, filename], b"");
+            assert_eq!(output.status.code(), Some(2));
+            assert!(output.stdout.is_empty());
+            assert!(!String::from_utf8_lossy(&output.stderr).contains("private_marker"));
+        }
+    }
+    assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 2);
+}
+
+#[test]
+fn templates_roundtrip_and_policy_requires_explicit_authority() {
+    let dir = setup();
+    let output = call(dir.path(), &["limits-template"], b"");
+    assert!(output.status.success());
+    let limits: toolcapsule::Limits = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(limits, toolcapsule::Limits::default());
+    let emit = ["limits-template", "--out", "limits.json"];
+    assert!(call(dir.path(), &emit, b"").status.success());
+    let original = std::fs::read(dir.path().join("limits.json")).unwrap();
+    assert_eq!(call(dir.path(), &emit, b"").status.code(), Some(2));
+    assert_eq!(
+        std::fs::read(dir.path().join("limits.json")).unwrap(),
+        original
+    );
+    let emit = [
+        "policy-template",
+        "--limits",
+        "limits.json",
+        "--out",
+        "host.json",
+    ];
+    assert!(call(dir.path(), &emit, b"").status.success());
+    assert_eq!(call(dir.path(), &emit, b"").status.code(), Some(2));
+    let mut policy: Policy =
+        serde_json::from_slice(&std::fs::read(dir.path().join("host.json")).unwrap()).unwrap();
+    assert!(policy.allowed_tools.is_empty());
+    assert_eq!(policy.max_limits, limits);
+    std::fs::copy(dir.path().join("host.json"), dir.path().join("policy.json")).unwrap();
+    assert_eq!(
+        call(dir.path(), &package("verify"), b"").status.code(),
+        Some(2)
+    );
+    policy.allowed_tools.push("uppercase".into());
+    std::fs::write(
+        dir.path().join("policy.json"),
+        serde_json::to_vec(&policy).unwrap(),
+    )
+    .unwrap();
+    assert!(call(dir.path(), &package("verify"), b"").status.success());
+}
+
+#[test]
+fn policy_template_rejects_bad_input_before_output() {
+    let dir = tempfile::tempdir().unwrap();
+    let output = call(dir.path(), &["policy-template"], b"");
+    let policy: Policy = serde_json::from_slice(&output.stdout).unwrap();
+    assert!(policy.allowed_tools.is_empty());
+    for bytes in [
+        b"{}".to_vec(),
+        vec![b' '; 4097],
+        serde_json::to_vec(&toolcapsule::Limits {
+            fuel: 0,
+            ..Default::default()
+        })
+        .unwrap(),
+    ] {
+        std::fs::write(dir.path().join("limits.json"), bytes).unwrap();
+        let output = call(
+            dir.path(),
+            &[
+                "policy-template",
+                "--limits",
+                "limits.json",
+                "--out",
+                "host.json",
+            ],
+            b"",
+        );
+        assert_eq!(output.status.code(), Some(2));
+        assert!(output.stdout.is_empty());
+        assert!(!dir.path().join("host.json").exists());
+    }
+}
+
+#[test]
+fn pack_explicit_limits_are_signed_enforced_and_cannot_grant_host_authority() {
+    let dir = setup();
+    let limits = toolcapsule::Limits {
+        input_bytes: 3,
+        output_bytes: 100,
+        ..Default::default()
+    };
+    std::fs::write(
+        dir.path().join("limits.json"),
+        serde_json::to_vec(&limits).unwrap(),
+    )
+    .unwrap();
+    let pack = [
+        "pack",
+        "--component",
+        "guest.wasm",
+        "--name",
+        "uppercase",
+        "--key",
+        "signing.key",
+        "--limits",
+        "limits.json",
+        "--out",
+        "custom.json",
+    ];
+    assert!(call(dir.path(), &pack, b"").status.success());
+    std::fs::copy(
+        dir.path().join("custom.json"),
+        dir.path().join("signed.json"),
+    )
+    .unwrap();
+    let output = call(dir.path(), &package("preflight"), b"");
+    assert!(output.status.success());
+    assert_eq!(
+        serde_json::from_slice::<Value>(&output.stdout).unwrap()["manifest"]["limits"],
+        serde_json::to_value(&limits).unwrap()
+    );
+    let mut run = package("run");
+    run.extend(["--audit", "audit.jsonl"]);
+    assert!(call(dir.path(), &run, b"abc").status.success());
+    assert_eq!(call(dir.path(), &run, b"abcd").status.code(), Some(2));
+    let mut policy: Policy =
+        serde_json::from_slice(&std::fs::read(dir.path().join("policy.json")).unwrap()).unwrap();
+    policy.max_limits.input_bytes = 2;
+    std::fs::write(
+        dir.path().join("policy.json"),
+        serde_json::to_vec(&policy).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(
+        call(dir.path(), &package("verify"), b"").status.code(),
+        Some(2)
+    );
+    assert_eq!(call(dir.path(), &pack, b"").status.code(), Some(2));
+}
+
+#[test]
+fn pack_rejects_invalid_limits_before_creating_output() {
+    let dir = setup();
+    let valid = serde_json::to_value(toolcapsule::Limits::default()).unwrap();
+    let mut invalid = Vec::new();
+    for (field, value) in [
+        ("fuel", 0),
+        ("memory_bytes", 65535),
+        ("timeout_ms", 9),
+        ("input_bytes", 0),
+        ("output_bytes", 0),
+        ("extra", 1),
+    ] {
+        let mut data = valid.clone();
+        data[field] = json!(value);
+        invalid.push(serde_json::to_vec(&data).unwrap());
+    }
+    invalid.extend([b"{}".to_vec(), vec![b' '; 4097]]);
+    for bytes in invalid {
+        std::fs::write(dir.path().join("limits.json"), bytes).unwrap();
+        let output = call(
+            dir.path(),
+            &[
+                "pack",
+                "--component",
+                "guest.wasm",
+                "--name",
+                "uppercase",
+                "--key",
+                "signing.key",
+                "--limits",
+                "limits.json",
+                "--out",
+                "rejected.json",
+            ],
+            b"",
+        );
+        assert_eq!(output.status.code(), Some(2));
+        assert!(!dir.path().join("rejected.json").exists());
+    }
+}
+
+#[test]
 fn cli_preflight_checks_interfaces_after_admission_without_outputs() {
     let dir = setup();
     let output = call(dir.path(), &package("preflight"), b"");

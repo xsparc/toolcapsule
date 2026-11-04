@@ -1,0 +1,375 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ToolCapsule validation diagnostics v1",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "kind": {
+          "enum": [
+            "limits",
+            "policy",
+            "trust",
+            "budget_fit"
+          ]
+        },
+        "error": {
+          "enum": [
+            "invalid_format",
+            "invalid_configuration",
+            "input_too_large",
+            "io_error",
+            "validation_failed",
+            "budget_exceeded"
+          ]
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "error"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "kind": {
+          "const": "limits"
+        },
+        "valid": {
+          "const": true
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "valid"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "kind": {
+          "const": "policy"
+        },
+        "valid": {
+          "const": true
+        },
+        "allowed_tool_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "denies_all_tools": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "valid",
+        "allowed_tool_count",
+        "denies_all_tools"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "kind": {
+          "const": "trust"
+        },
+        "valid": {
+          "const": true
+        },
+        "key_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "denies_all_signers": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "valid",
+        "key_count",
+        "denies_all_signers"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "kind": {
+          "const": "budget_fit"
+        },
+        "fits": {
+          "type": "boolean"
+        },
+        "exceeded_fields": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "fuel",
+              "memory_bytes",
+              "timeout_ms",
+              "input_bytes",
+              "output_bytes"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "package_admission": {
+          "const": "not_checked"
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "fits",
+        "exceeded_fields",
+        "package_admission"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "kind": {
+          "const": "configuration"
+        },
+        "valid": {
+          "type": "boolean"
+        },
+        "checks": {
+          "type": "object",
+          "properties": {
+            "limits": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "const": "valid"
+                    }
+                  },
+                  "required": [
+                    "status"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "const": "invalid"
+                    },
+                    "error": {
+                      "enum": [
+                        "invalid_format",
+                        "invalid_configuration",
+                        "input_too_large",
+                        "io_error",
+                        "validation_failed"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            },
+            "policy": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "const": "valid"
+                    },
+                    "denies_all_tools": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "denies_all_tools"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "const": "invalid"
+                    },
+                    "error": {
+                      "enum": [
+                        "invalid_format",
+                        "invalid_configuration",
+                        "input_too_large",
+                        "io_error",
+                        "validation_failed"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            },
+            "trust": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "const": "valid"
+                    },
+                    "denies_all_signers": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "denies_all_signers"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "const": "invalid"
+                    },
+                    "error": {
+                      "enum": [
+                        "invalid_format",
+                        "invalid_configuration",
+                        "input_too_large",
+                        "io_error",
+                        "validation_failed"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": [
+            "limits",
+            "policy",
+            "trust"
+          ],
+          "additionalProperties": false
+        },
+        "budget_fit": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "enum": [
+                "fits",
+                "exceeds",
+                "not_checked"
+              ]
+            },
+            "exceeded_fields": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "fuel",
+                  "memory_bytes",
+                  "timeout_ms",
+                  "input_bytes",
+                  "output_bytes"
+                ]
+              },
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "status",
+            "exceeded_fields"
+          ],
+          "additionalProperties": false
+        },
+        "package_admission": {
+          "const": "not_checked"
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "valid",
+        "checks",
+        "budget_fit",
+        "package_admission"
+      ],
+      "additionalProperties": false
+    }
+  ],
+  "examples": [
+    {
+      "schema_version": 1,
+      "kind": "limits",
+      "error": "invalid_format"
+    },
+    {
+      "schema_version": 1,
+      "kind": "limits",
+      "error": "invalid_configuration"
+    },
+    {
+      "schema_version": 1,
+      "kind": "limits",
+      "error": "input_too_large"
+    },
+    {
+      "schema_version": 1,
+      "kind": "limits",
+      "error": "io_error"
+    },
+    {
+      "schema_version": 1,
+      "kind": "limits",
+      "error": "validation_failed"
+    },
+    {
+      "schema_version": 1,
+      "kind": "budget_fit",
+      "error": "budget_exceeded"
+    }
+  ]
+}

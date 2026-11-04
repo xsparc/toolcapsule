@@ -34,8 +34,8 @@ source_priority = ["docs/architecture.md", "docs/roadmap.md", "docs/decisions/",
 dhf_is_authoritative = false
 
 [review]
-last_reviewed = "2026-10-19"
-review_due = "2026-11-19"
+last_reviewed = "2026-10-26"
+review_due = "2026-11-26"
 
 [[objectives]]
 id = "OBJ-SAFE-TOOLS"
@@ -309,3 +309,181 @@ roadmap_refs = ["docs/roadmap.md"]
 approval_ref = "conversation:2026-10-25-research-select-next-milestones-and-draft-prs"
 acceptance_refs = ["docs/decisions/0009-package-preflight.md"]
 evidence_refs = ["tests/preflight.rs", "docs/governance/preflight-validation.md"]
+
+[[work_items]]
+id = "TC014-RUNTIME-SECURITY-PATCH"
+title = "Apply the Wasmtime 49.0.4 security patch and version replay evidence"
+status = "closed"
+requirement_ids = ["REQ-WASI-RUNTIME"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-10-26-opensteward-small-maintenance-review"
+acceptance_refs = ["docs/governance/runtime-security-patch-validation.md"]
+evidence_refs = ["Cargo.toml", "Cargo.lock", "src/runtime.rs", "tests/runtime.rs"]
+
+[[research_decisions]]
+id = "RD-SIGNED-BUDGETS"
+disposition = "adopted"
+source_refs = ["docs/governance/budget-direction.md"]
+design_refs = ["docs/decisions/0010-signed-resource-budgets.md"]
+
+[[requirements]]
+id = "REQ-SIGNED-BUDGETS"
+statement = "Explicit signed resource budgets with strict admission and explicit evidence identity."
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0010-signed-resource-budgets.md"]
+risk_refs = ["docs/resource-budgets.md"]
+implementation_refs = ["src/package.rs","src/main.rs"]
+verification_refs = ["tests/cli.rs","tests/package.rs"]
+validation_refs = ["docs/governance/budget-validation.md"]
+
+[[work_items]]
+id = "TC015-SIGNED-BUDGETS"
+title = "Explicit signed resource budgets"
+status = "closed"
+requirement_ids = ["REQ-SIGNED-BUDGETS"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-10-26-research-select-next-milestones-and-draft-prs"
+acceptance_refs = ["docs/decisions/0010-signed-resource-budgets.md"]
+evidence_refs = ["tests/cli.rs", "docs/governance/budget-validation.md"]
+
+[[research_decisions]]
+id = "RD-CONFIGURATION-TEMPLATES"
+disposition = "adopted"
+source_refs = ["docs/governance/template-direction.md"]
+design_refs = ["docs/decisions/0011-configuration-templates.md"]
+
+[[requirements]]
+id = "REQ-CONFIGURATION-TEMPLATES"
+statement = "Configuration templates with bounded admission and explicit authority."
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0011-configuration-templates.md"]
+risk_refs = ["docs/configuration-templates.md"]
+implementation_refs = ["src/main.rs"]
+verification_refs = ["tests/cli.rs"]
+validation_refs = ["docs/governance/template-validation.md"]
+
+[[work_items]]
+id = "TC016-CONFIGURATION-TEMPLATES"
+title = "Configuration templates"
+status = "closed"
+requirement_ids = ["REQ-CONFIGURATION-TEMPLATES"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-10-27-five-item-milestone-and-draft-prs"
+acceptance_refs = ["docs/decisions/0011-configuration-templates.md"]
+evidence_refs = ["tests/cli.rs", "docs/governance/template-validation.md"]
+
+[[research_decisions]]
+id = "RD-CONFIGURATION-VALIDATION"
+disposition = "adopted"
+source_refs = ["docs/governance/configuration-validation-direction.md"]
+design_refs = ["docs/decisions/0012-configuration-validation.md"]
+
+[[requirements]]
+id = "REQ-CONFIGURATION-VALIDATION"
+statement = "Offline configuration validation with bounded admission and explicit authority."
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0012-configuration-validation.md"]
+risk_refs = ["docs/configuration-validation.md"]
+implementation_refs = ["src/main.rs", "src/package.rs"]
+verification_refs = ["tests/cli.rs", "tests/package.rs"]
+validation_refs = ["docs/governance/configuration-validation.md"]
+
+[[work_items]]
+id = "TC017-CONFIGURATION-VALIDATION"
+title = "Offline configuration validation"
+status = "closed"
+requirement_ids = ["REQ-CONFIGURATION-VALIDATION"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-10-27-five-item-milestone-and-draft-prs"
+acceptance_refs = ["docs/decisions/0012-configuration-validation.md"]
+evidence_refs = ["tests/cli.rs", "docs/governance/configuration-validation.md"]
+
+[[research_decisions]]
+id = "RD-TRUST-BUDGET-CHECKS"
+disposition = "adopted"
+source_refs = ["docs/governance/trust-budget-direction.md"]
+design_refs = ["docs/decisions/0013-trust-budget-checks.md"]
+
+[[requirements]]
+id = "REQ-TRUST-BUDGET-CHECKS"
+statement = "Trust validation and budget-fit reporting with bounded admission and explicit authority."
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0013-trust-budget-checks.md"]
+risk_refs = ["docs/trust-budget-checks.md"]
+implementation_refs = ["src/trust_check.rs", "src/package.rs", "src/main.rs"]
+verification_refs = ["tests/trust_check.rs", "tests/package.rs", "tests/cli.rs"]
+validation_refs = ["docs/governance/trust-budget-validation.md"]
+
+[[work_items]]
+id = "TC018-TRUST-BUDGET-CHECKS"
+title = "Trust validation and budget-fit reporting"
+status = "closed"
+requirement_ids = ["REQ-TRUST-BUDGET-CHECKS"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-10-28-five-item-milestone-and-draft-prs"
+acceptance_refs = ["docs/decisions/0013-trust-budget-checks.md"]
+evidence_refs = ["tests/trust_check.rs", "docs/governance/trust-budget-validation.md"]
+
+[[research_decisions]]
+id = "RD-VALIDATION-DIAGNOSTICS"
+disposition = "adopted"
+source_refs = ["docs/governance/validation-diagnostics-direction.md"]
+design_refs = ["docs/decisions/0014-validation-diagnostics.md"]
+
+[[requirements]]
+id = "REQ-VALIDATION-DIAGNOSTICS"
+statement = "Validation diagnostics and configuration acceptance with bounded inputs and explicit evidence scope."
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0014-validation-diagnostics.md"]
+risk_refs = ["docs/validation-diagnostics.md"]
+implementation_refs = ["src/main.rs"]
+verification_refs = ["tests/configuration_workflow.rs","tests/cli.rs"]
+validation_refs = ["docs/governance/validation-diagnostics-validation.md"]
+
+[[work_items]]
+id = "TC019-VALIDATION-DIAGNOSTICS"
+title = "Validation diagnostics and configuration acceptance"
+status = "closed"
+requirement_ids = ["REQ-VALIDATION-DIAGNOSTICS"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-10-29-next-autonomous-milestone-and-draft-prs"
+acceptance_refs = ["docs/decisions/0014-validation-diagnostics.md"]
+evidence_refs = ["tests/configuration_workflow.rs","tests/cli.rs","docs/governance/validation-diagnostics-validation.md"]
+
+[[research_decisions]]
+id = "RD-CONFIGURATION-CONTRACTS"
+disposition = "adopted"
+source_refs = ["docs/governance/configuration-contracts-direction.md"]
+design_refs = ["docs/decisions/0015-configuration-contracts.md"]
+
+[[requirements]]
+id = "REQ-CONFIGURATION-CONTRACTS"
+statement = "Configuration contracts with bounded input, explicit direction and limited evidence claims."
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0015-configuration-contracts.md"]
+risk_refs = ["docs/configuration-contracts.md"]
+implementation_refs = ["src/configuration.rs", "src/main.rs", "schemas/validation.schema.json"]
+verification_refs = ["tests/configuration_check.rs", "tests/configuration_workflow.rs"]
+validation_refs = ["docs/governance/configuration-contracts-validation.md"]
+
+[[work_items]]
+id = "TC020-CONFIGURATION-CONTRACTS"
+title = "Configuration contracts"
+status = "closed"
+requirement_ids = ["REQ-CONFIGURATION-CONTRACTS"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-10-31-next-autonomous-milestone-and-draft-prs"
+acceptance_refs = ["docs/decisions/0015-configuration-contracts.md"]
+evidence_refs = ["tests/configuration_check.rs", "tests/configuration_workflow.rs", "docs/governance/configuration-contracts-validation.md"]

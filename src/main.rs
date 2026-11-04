@@ -26,6 +26,59 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    /// Print the versioned JSON Schema for validation diagnostics and summaries.
+    ValidationSchema,
+    /// Check explicit limits, policy and trust independently, then compare budgets.
+    ConfigurationCheck {
+        #[arg(long)]
+        limits: PathBuf,
+        #[arg(long)]
+        policy: PathBuf,
+        #[arg(long)]
+        trust: PathBuf,
+    },
+    /// Check public trust-store encoding without loading signing seeds or executing tools.
+    TrustCheck {
+        #[arg(long)]
+        trust: PathBuf,
+        #[arg(long)]
+        json_errors: bool,
+    },
+    /// Compare requested limits with host maxima; fit does not admit a package.
+    BudgetFit {
+        #[arg(long)]
+        limits: PathBuf,
+        #[arg(long)]
+        policy: PathBuf,
+        #[arg(long)]
+        json_errors: bool,
+    },
+    /// Validate a limits file without signing, compiling or executing a tool.
+    LimitsCheck {
+        #[arg(long)]
+        limits: PathBuf,
+        #[arg(long)]
+        json_errors: bool,
+    },
+    /// Check host policy authoring errors; does not grant or verify package authority.
+    PolicyCheck {
+        #[arg(long)]
+        policy: PathBuf,
+        #[arg(long)]
+        json_errors: bool,
+    },
+    /// Emit current default Limits JSON without creating keys or executing code.
+    LimitsTemplate {
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+    /// Emit a host policy with an empty tool allowlist; no tool is authorized.
+    PolicyTemplate {
+        #[arg(long)]
+        limits: Option<PathBuf>,
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
     /// Generate a signing seed and a separate public trust store. Never overwrites files.
     Keygen {
         #[arg(long)]
@@ -35,7 +88,7 @@ enum Command {
         #[arg(long, default_value = "local")]
         key_id: String,
     },
-    /// Create a signed manifest for a WASI 0.2 command using default bounded limits.
+    /// Create a signed manifest with default or explicitly supplied resource limits.
     Pack {
         #[arg(long)]
         component: PathBuf,
@@ -45,6 +98,9 @@ enum Command {
         version: String,
         #[arg(long, default_value = "A sandboxed WASI tool")]
         description: String,
+        /// Closed Limits JSON (at most 4 KiB); requests still require host admission.
+        #[arg(long)]
+        limits: Option<PathBuf>,
         #[arg(long)]
         key: PathBuf,
         #[arg(long, default_value = "local")]
@@ -155,6 +211,16 @@ impl PackageArgs {
     }
 }
 
+fn emit_template(value: &impl serde::Serialize, out: Option<PathBuf>) -> Result<(), Error> {
+    match out {
+        Some(path) => write_new(
+            &path,
+            &serde_json::to_vec_pretty(value).map_err(|_| Error::Format)?,
+        ),
+        None => print_json(value),
+    }
+}
+
 fn print_json(value: &impl serde::Serialize) -> Result<(), Error> {
     let mut out = io::stdout().lock();
     serde_json::to_writer(&mut out, value).map_err(|_| Error::Io)?;
@@ -165,18 +231,111 @@ fn print_json(value: &impl serde::Serialize) -> Result<(), Error> {
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> std::process::ExitCode {
-    match execute(Cli::parse()).await {
-        Ok(true) => std::process::ExitCode::SUCCESS,
-        Ok(false) => std::process::ExitCode::FAILURE,
+    let cli = Cli::parse();
+    let diagnostic = match &cli.command {
+        Command::TrustCheck {
+            json_errors: true, ..
+        } => Some("trust"),
+        Command::BudgetFit {
+            json_errors: true, ..
+        } => Some("budget_fit"),
+        Command::LimitsCheck {
+            json_errors: true, ..
+        } => Some("limits"),
+        Command::PolicyCheck {
+            json_errors: true, ..
+        } => Some("policy"),
+        _ => None,
+    };
+    match execute(cli).await {
+        Ok(status) => {
+            if let Some(kind) = diagnostic.filter(|_| status == 1) {
+                json_error(kind, "budget_exceeded");
+            }
+            std::process::ExitCode::from(status)
+        }
         Err(error) => {
-            eprintln!("toolcapsule: {error}");
+            if let Some(kind) = diagnostic {
+                let code = configuration::error_code(&error);
+                json_error(kind, code);
+            } else {
+                eprintln!("toolcapsule: {error}");
+            }
             std::process::ExitCode::from(2)
         }
     }
 }
 
-async fn execute(cli: Cli) -> Result<bool, Error> {
+fn json_error(kind: &str, code: &str) {
+    // Fixed vocabulary only: never serialize input values or error chains.
+    let value = serde_json::json!({"schema_version": 1, "kind": kind, "error": code});
+    let _ = writeln!(io::stderr().lock(), "{value}");
+}
+
+async fn execute(cli: Cli) -> Result<u8, Error> {
     match cli.command {
+        Command::ValidationSchema => print_json(&configuration::schema())?,
+        Command::ConfigurationCheck {
+            limits,
+            policy,
+            trust,
+        } => {
+            let (report, status) = configuration::check(&limits, &policy, &trust);
+            print_json(&report)?;
+            return Ok(status);
+        }
+        Command::TrustCheck { trust, .. } => {
+            let count =
+                trust_check::check_trust(&read_file(&trust, trust_check::MAX_TRUST_BYTES)?)?;
+            print_json(
+                &serde_json::json!({"schema_version": 1, "kind": "trust", "valid": true,
+                "key_count": count, "denies_all_signers": count == 0}),
+            )?;
+        }
+        Command::BudgetFit { limits, policy, .. } => {
+            let limits: Limits = read_json(&limits, 4096)?;
+            let policy: Policy = read_json(&policy, 64 * 1024)?;
+            policy.validate()?;
+            let exceeded = limits.exceeded_fields(&policy.max_limits)?;
+            let fits = exceeded.is_empty();
+            print_json(
+                &serde_json::json!({"schema_version": 1, "kind": "budget_fit",
+                "fits": fits, "exceeded_fields": exceeded, "package_admission": "not_checked"}),
+            )?;
+            return Ok(u8::from(!fits));
+        }
+        Command::LimitsCheck { limits, .. } => {
+            read_json::<Limits>(&limits, 4096)?.validate()?;
+            print_json(&serde_json::json!({"schema_version": 1, "kind": "limits", "valid": true}))?;
+        }
+        Command::PolicyCheck { policy, .. } => {
+            let policy: Policy = read_json(&policy, 64 * 1024)?;
+            policy.validate()?;
+            print_json(&serde_json::json!({
+                "schema_version": 1, "kind": "policy", "valid": true,
+                "allowed_tool_count": policy.allowed_tools.len(),
+                "denies_all_tools": policy.allowed_tools.is_empty()
+            }))?;
+        }
+        Command::LimitsTemplate { out } => {
+            let limits = Limits::default();
+            limits.validate()?;
+            emit_template(&limits, out)?;
+        }
+        Command::PolicyTemplate { limits, out } => {
+            let max_limits: Limits = match limits {
+                Some(path) => read_json(&path, 4096)?,
+                None => Limits::default(),
+            };
+            max_limits.validate()?;
+            emit_template(
+                &Policy {
+                    max_limits,
+                    ..Policy::default()
+                },
+                out,
+            )?;
+        }
         Command::Keygen { key, trust, key_id } => {
             if key_id.is_empty() || key_id.len() > 64 {
                 return Err(Error::Format);
@@ -201,10 +360,16 @@ async fn execute(cli: Cli) -> Result<bool, Error> {
             name,
             version,
             description,
+            limits,
             key,
             key_id,
             out,
         } => {
+            let limits: Limits = match limits {
+                Some(path) => read_json(&path, 4096)?,
+                None => Limits::default(),
+            };
+            limits.validate()?;
             let key = read_file(&key, 128)?;
             let key: [u8; 32] =
                 hex::decode(std::str::from_utf8(&key).map_err(|_| Error::Format)?.trim())
@@ -219,7 +384,7 @@ async fn execute(cli: Cli) -> Result<bool, Error> {
                 abi: "wasi:cli/command@0.2".into(),
                 component_sha256: digest(&read_file(&component, 16 * 1024 * 1024)?),
                 capabilities: Capabilities::default(),
-                limits: Limits::default(),
+                limits,
             };
             let signed = SignedManifest::sign(&manifest, &key_id, &SigningKey::from_bytes(&key))?;
             write_new(
@@ -258,7 +423,7 @@ async fn execute(cli: Cli) -> Result<bool, Error> {
                 &serde_json::json!({"outcome":result.outcome,"stdout":String::from_utf8_lossy(&result.stdout),
                 "stderr":String::from_utf8_lossy(&result.stderr),"fuel_consumed":result.fuel_consumed,"receipt":record}),
             )?;
-            return Ok(result.outcome == Outcome::Success);
+            return Ok(u8::from(result.outcome != Outcome::Success));
         }
         Command::Replay { package, receipt } => {
             let tool = package.prepare()?;
@@ -339,5 +504,5 @@ async fn execute(cli: Cli) -> Result<bool, Error> {
             )?;
         }
     }
-    Ok(true)
+    Ok(0)
 }
