@@ -122,3 +122,9 @@ execution authority. See the [accepted decision](decisions/0015-configuration-co
 
 TC021 validates retained evidence and compares it with explicit sources without
 execution. See [the accepted decision](decisions/0016-retained-configuration.md).
+
+## TC022: Configuration difference (2026-11-05)
+
+Completed the saved milestone with bounded, non-executing retained-evidence checks.
+See `docs/decisions/0017-configuration-difference.md`, `docs/configuration-difference.md` and `docs/governance/configuration-difference-validation.md`.
+The next five tasks in `docs/next-milestone.md` are planned only.

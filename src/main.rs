@@ -26,6 +26,15 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    /// Compare two retained configuration summaries without inferring authority.
+    ConfigurationDiff {
+        before: PathBuf,
+        after: PathBuf,
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+    /// Print the closed configuration difference schema.
+    ConfigurationDiffSchema,
     /// Validate a retained combined configuration result without its source files.
     ConfigurationResultCheck {
         #[arg(long)]
@@ -249,6 +258,7 @@ fn print_json(value: &impl serde::Serialize) -> Result<(), Error> {
 async fn main() -> std::process::ExitCode {
     let cli = Cli::parse();
     let diagnostic = match &cli.command {
+        Command::ConfigurationDiff { .. } => Some("configuration_difference"),
         Command::ConfigurationResultCheck { .. } | Command::ConfigurationResultVerify { .. } => {
             Some("configuration_result")
         }
@@ -293,6 +303,21 @@ fn json_error(kind: &str, code: &str) {
 
 async fn execute(cli: Cli) -> Result<u8, Error> {
     match cli.command {
+        Command::ConfigurationDiffSchema => print_json(&configuration_diff::schema())?,
+        Command::ConfigurationDiff { before, after, out } => {
+            let bytes = configuration_diff::encode(
+                &read_file(&before, configuration::MAX_RESULT_BYTES)?,
+                &read_file(&after, configuration::MAX_RESULT_BYTES)?,
+            )?;
+            if let Some(path) = out {
+                write_new(&path, &bytes)?;
+            } else {
+                io::stdout()
+                    .lock()
+                    .write_all(&bytes)
+                    .map_err(|_| Error::Io)?;
+            }
+        }
         Command::ConfigurationResultCheck { report } => {
             configuration::read_result(&read_file(&report, configuration::MAX_RESULT_BYTES)?)?;
             print_json(

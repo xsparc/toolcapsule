@@ -4,6 +4,7 @@ pub mod batch;
 pub mod cache;
 pub mod checkpoint_signing;
 pub mod configuration;
+pub mod configuration_diff;
 pub mod mcp;
 pub mod package;
 pub mod pool;

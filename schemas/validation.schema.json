@@ -14,7 +14,8 @@
             "policy",
             "trust",
             "budget_fit",
-            "configuration_result"
+            "configuration_result",
+            "configuration_difference"
           ]
         },
         "error": {
