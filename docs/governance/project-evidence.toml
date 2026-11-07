@@ -543,3 +543,31 @@ roadmap_refs = ["docs/roadmap.md"]
 approval_ref = "conversation:2026-11-05-next-autonomous-milestone-and-draft-prs"
 acceptance_refs = ["docs/decisions/0017-configuration-difference.md"]
 evidence_refs = ["tests/configuration_diff.rs", "docs/governance/configuration-difference-validation.md"]
+
+[[research_decisions]]
+id = "RD-RETAINED-DIFFERENCES"
+disposition = "adopted"
+source_refs = ["docs/governance/retained-differences-direction.md"]
+design_refs = ["docs/decisions/0018-retained-differences.md"]
+
+[[requirements]]
+id = "REQ-RETAINED-DIFFERENCES"
+statement = "Retained differences with bounded intake, independent verification targets and explicit evidence limits."
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0018-retained-differences.md"]
+risk_refs = ["docs/retained-differences.md"]
+implementation_refs = ["src/configuration_diff.rs", "src/configuration.rs", "src/main.rs"]
+verification_refs = ["tests/retained_difference.rs"]
+validation_refs = ["docs/governance/retained-differences-validation.md"]
+
+[[work_items]]
+id = "TC023-RETAINED-DIFFERENCES"
+title = "Retained differences"
+status = "closed"
+requirement_ids = ["REQ-RETAINED-DIFFERENCES"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-11-07-next-autonomous-milestone-and-draft-prs"
+acceptance_refs = ["docs/decisions/0018-retained-differences.md"]
+evidence_refs = ["tests/retained_difference.rs", "docs/governance/retained-differences-validation.md"]
