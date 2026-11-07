@@ -515,3 +515,31 @@ roadmap_refs = ["docs/roadmap.md"]
 approval_ref = "conversation:2026-11-04-next-autonomous-milestone-and-draft-prs"
 acceptance_refs = ["docs/decisions/0016-retained-configuration.md"]
 evidence_refs = ["tests/retained_configuration.rs", "docs/governance/retained-configuration-validation.md"]
+
+[[research_decisions]]
+id = "RD-CONFIGURATION-DIFFERENCE"
+disposition = "adopted"
+source_refs = ["docs/governance/configuration-difference-direction.md"]
+design_refs = ["docs/decisions/0017-configuration-difference.md"]
+
+[[requirements]]
+id = "REQ-CONFIGURATION-DIFFERENCE"
+statement = "Configuration difference with bounded input and explicit evidence limits."
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0017-configuration-difference.md"]
+risk_refs = ["docs/configuration-difference.md"]
+implementation_refs = ["src/configuration_diff.rs"]
+verification_refs = ["tests/configuration_diff.rs"]
+validation_refs = ["docs/governance/configuration-difference-validation.md"]
+
+[[work_items]]
+id = "TC022-CONFIGURATION-DIFFERENCE"
+title = "Configuration difference"
+status = "closed"
+requirement_ids = ["REQ-CONFIGURATION-DIFFERENCE"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-11-05-next-autonomous-milestone-and-draft-prs"
+acceptance_refs = ["docs/decisions/0017-configuration-difference.md"]
+evidence_refs = ["tests/configuration_diff.rs", "docs/governance/configuration-difference-validation.md"]

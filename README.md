@@ -144,3 +144,5 @@ trust-check exits 0 for a valid store and prints schema_version, kind, valid, ke
 See [configuration contracts](docs/configuration-contracts.md) for the latest offline review workflow and evidence limits.
 
 See [retained configuration verification](docs/retained-configuration.md) for retained evidence checks and their limits.
+
+See [Configuration difference](docs/configuration-difference.md) for the retained-evidence workflow and its limits.

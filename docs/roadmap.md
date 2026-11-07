@@ -134,3 +134,9 @@ Next five tasks: `docs/next-milestone.md` (planned only).
 
 Implements the retained handoff from 2026-10-31. Design: `docs/decisions/0016-retained-configuration.md`.
 Acceptance: `docs/governance/retained-configuration-validation.md`. Next tasks: `docs/next-milestone.md`.
+
+## TC022: Configuration difference (2026-11-05)
+
+Completed the saved milestone with bounded, non-executing retained-evidence checks.
+See `docs/decisions/0017-configuration-difference.md`, `docs/configuration-difference.md` and `docs/governance/configuration-difference-validation.md`.
+The next five tasks in `docs/next-milestone.md` are planned only.
