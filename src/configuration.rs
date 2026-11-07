@@ -132,7 +132,7 @@ struct BudgetCheck {
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
-struct RawResult {
+pub(crate) struct RawResult {
     schema_version: u8,
     kind: String,
     valid: bool,

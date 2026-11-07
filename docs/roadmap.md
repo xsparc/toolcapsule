@@ -140,3 +140,9 @@ Acceptance: `docs/governance/retained-configuration-validation.md`. Next tasks: 
 Completed the saved milestone with bounded, non-executing retained-evidence checks.
 See `docs/decisions/0017-configuration-difference.md`, `docs/configuration-difference.md` and `docs/governance/configuration-difference-validation.md`.
 The next five tasks in `docs/next-milestone.md` are planned only.
+
+## TC023: Retained differences (2026-11-07)
+
+Implemented the saved retained-evidence tasks. Decision: `docs/decisions/0018-retained-differences.md`.
+Workflow and limits: `docs/retained-differences.md`. Verification: `docs/governance/retained-differences-validation.md`.
+The shared next-five project tracker is `docs/next-milestone.md`; its tasks remain planned.
