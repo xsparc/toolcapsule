@@ -26,6 +26,16 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    /// Render a retained difference, optionally checked against two explicit summaries.
+    ConfigurationDiffHtml {
+        report: PathBuf,
+        #[arg(long)]
+        out: PathBuf,
+        #[arg(long)]
+        before: Option<PathBuf>,
+        #[arg(long)]
+        after: Option<PathBuf>,
+    },
     /// Check a retained difference without executing or rewriting evidence.
     ConfigurationDiffCheck { report: PathBuf },
     /// Verify a difference against explicit before/after configuration summaries.
@@ -266,7 +276,8 @@ fn print_json(value: &impl serde::Serialize) -> Result<(), Error> {
 async fn main() -> std::process::ExitCode {
     let cli = Cli::parse();
     let diagnostic = match &cli.command {
-        Command::ConfigurationDiff { .. }
+        Command::ConfigurationDiffHtml { .. }
+        | Command::ConfigurationDiff { .. }
         | Command::ConfigurationDiffCheck { .. }
         | Command::ConfigurationDiffVerify { .. } => Some("configuration_difference"),
         Command::ConfigurationResultCheck { .. } | Command::ConfigurationResultVerify { .. } => {
@@ -313,6 +324,27 @@ fn json_error(kind: &str, code: &str) {
 
 async fn execute(cli: Cli) -> Result<u8, Error> {
     match cli.command {
+        Command::ConfigurationDiffHtml {
+            report,
+            out,
+            before,
+            after,
+        } => {
+            let raw = read_file(&report, configuration_diff::MAX_DIFF_BYTES)?;
+            let sources = match (before, after) {
+                (None, None) => None,
+                (Some(before), Some(after)) => Some((
+                    read_file(&before, configuration::MAX_RESULT_BYTES)?,
+                    read_file(&after, configuration::MAX_RESULT_BYTES)?,
+                )),
+                _ => return Err(Error::Format),
+            };
+            let html = configuration_review::render(
+                &raw,
+                sources.as_ref().map(|(a, b)| (a.as_slice(), b.as_slice())),
+            )?;
+            write_new(&out, html.as_bytes())?;
+        }
         Command::ConfigurationDiffCheck { report } => {
             configuration_diff::read_difference(&read_file(
                 &report,

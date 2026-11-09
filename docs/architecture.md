@@ -134,3 +134,9 @@ The next five tasks in `docs/next-milestone.md` are planned only.
 Implemented the saved retained-evidence tasks. Decision: `docs/decisions/0018-retained-differences.md`.
 Workflow and limits: `docs/retained-differences.md`. Verification: `docs/governance/retained-differences-validation.md`.
 The shared next-five project tracker is `docs/next-milestone.md`; its tasks remain planned.
+
+## TC024: Difference review (2026-11-09)
+
+Implemented the saved review tasks. Decision: `docs/decisions/0019-difference-review.md`.
+Workflow: `docs/difference-review.md`. Verification and limits: `docs/governance/difference-review-validation.md`.
+The shared next-five project tracker is `docs/next-milestone.md`; those tasks remain planned.

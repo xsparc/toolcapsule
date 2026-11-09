@@ -571,3 +571,31 @@ roadmap_refs = ["docs/roadmap.md"]
 approval_ref = "conversation:2026-11-07-next-autonomous-milestone-and-draft-prs"
 acceptance_refs = ["docs/decisions/0018-retained-differences.md"]
 evidence_refs = ["tests/retained_difference.rs", "docs/governance/retained-differences-validation.md"]
+
+[[research_decisions]]
+id = "RD-DIFFERENCE-REVIEW"
+disposition = "adopted"
+source_refs = ["docs/governance/difference-review-direction.md"]
+design_refs = ["docs/decisions/0019-difference-review.md"]
+
+[[requirements]]
+id = "REQ-DIFFERENCE-REVIEW"
+statement = "Difference review with bounded intake and verification before output."
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0019-difference-review.md"]
+risk_refs = ["docs/difference-review.md"]
+implementation_refs = ["src/configuration_review.rs", "src/main.rs"]
+verification_refs = ["tests/configuration_review.rs"]
+validation_refs = ["docs/governance/difference-review-validation.md"]
+
+[[work_items]]
+id = "TC024-DIFFERENCE-REVIEW"
+title = "Difference review"
+status = "closed"
+requirement_ids = ["REQ-DIFFERENCE-REVIEW"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-11-09-next-autonomous-milestone-and-draft-prs"
+acceptance_refs = ["docs/decisions/0019-difference-review.md"]
+evidence_refs = ["tests/configuration_review.rs", "docs/governance/difference-review-validation.md"]
