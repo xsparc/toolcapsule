@@ -25,6 +25,5 @@ Use only the locally compiled fixture. Compilation needs external process limits
 Compare repeated release-mode measurements before tuning. No cache, pooling,
 parallel throughput, RSS guarantee or service SLA is introduced.
 
-Historical samples retain their recorded runtime profile. The 49.0.4 security
-update does not relabel or regenerate the earlier 49.0.3 measurements. Collect
-new samples on the patched runtime before comparing performance.
+Historical samples retain their recorded runtime profile across engine updates.
+Collect new samples on the patched runtime before comparing performance.

@@ -140,3 +140,10 @@ Acceptance: `docs/governance/retained-configuration-validation.md`. Next tasks: 
 Completed the saved milestone with bounded, non-executing retained-evidence checks.
 See `docs/decisions/0017-configuration-difference.md`, `docs/configuration-difference.md` and `docs/governance/configuration-difference-validation.md`.
 The next five tasks in `docs/next-milestone.md` are planned only.
+
+## TC014 follow-up: Component resource accounting
+
+Pin Wasmtime and wasmtime-wasi to 49.0.5 for RUSTSEC-2026-0424.
+Verify current-profile replay, rejection of earlier engine profiles and the
+existing runtime and governance checks. See
+[validation evidence](governance/runtime-resource-patch-validation.md).
