@@ -148,3 +148,5 @@ See [retained configuration verification](docs/retained-configuration.md) for re
 See [Configuration difference](docs/configuration-difference.md) for the retained-evidence workflow and its limits.
 
 See [Retained differences](docs/retained-differences.md) for the verification workflow and evidence limits.
+
+See [Difference review](docs/difference-review.md) for the bounded review workflow.
