@@ -79,3 +79,9 @@ Retained configuration verification: `docs/decisions/0016-retained-configuration
 Completed the saved milestone with bounded, non-executing retained-evidence checks.
 See `docs/decisions/0017-configuration-difference.md`, `docs/configuration-difference.md` and `docs/governance/configuration-difference-validation.md`.
 The next five tasks in `docs/next-milestone.md` are planned only.
+
+## 2026-11-09: TC014 follow-up
+
+Wasmtime 49.0.5 fixes unchecked host memory allocations for borrowed component
+resources. The engine pin and replay profile advance together. See
+[validation evidence](runtime-resource-patch-validation.md).

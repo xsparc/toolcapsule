@@ -50,17 +50,23 @@ selected host trust store. Verification still requires independently retained
 freshness evidence; signatures do not prevent replay of older valid checkpoints.
 See [checkpoint custody](audit-checkpoints.md).
 
-## Runtime security patch, 2026-10-26
+## Runtime security patches
 
-Use Wasmtime/wasmtime-wasi 49.0.4. The previous 49.0.3 pin is affected by
+Use Wasmtime and wasmtime-wasi 49.0.5. Earlier 49.x releases are affected by
+[RUSTSEC-2026-0424](https://rustsec.org/advisories/RUSTSEC-2026-0424.html).
+A guest can exhaust host memory by transferring borrowed resources between
+components. The guest linear memory limit does not cover these host allocations.
+Keep external worker memory limits in place.
+
+The previous 49.0.3 pin is also affected by
 [RUSTSEC-2026-0379](https://rustsec.org/advisories/RUSTSEC-2026-0379.html):
 Cranelift on AArch64 can miscompile a large branch table and permit a sandbox
 escape. The [upstream 49.0.4 release](https://github.com/bytecodealliance/wasmtime/releases/tag/v49.0.4)
 contains the patch. Guest capabilities and signatures do not replace an engine
 security update.
 
-The runtime profile now identifies 49.0.4. Preserve old receipts and audit
+The runtime profile identifies 49.0.5. Preserve old receipts and audit
 checkpoints as historical evidence; do not relabel them with the new profile.
-Replay rejects 49.0.3 receipts. Rebuild and restart integrating workers so old
-prepared tools, cache entries and retained handles cannot keep the old engine
-alive. This change does not migrate persisted evidence or deploy workers.
+Replay rejects receipts from earlier engine profiles. Rebuild and restart
+integrating workers to replace the old engine and discard prepared tools, cache
+entries and retained handles.

@@ -543,3 +543,13 @@ roadmap_refs = ["docs/roadmap.md"]
 approval_ref = "conversation:2026-11-05-next-autonomous-milestone-and-draft-prs"
 acceptance_refs = ["docs/decisions/0017-configuration-difference.md"]
 evidence_refs = ["tests/configuration_diff.rs", "docs/governance/configuration-difference-validation.md"]
+
+[[work_items]]
+id = "TC014-RUNTIME-RESOURCE-PATCH"
+title = "Patch Wasmtime component resource accounting and version replay evidence"
+status = "closed"
+requirement_ids = ["REQ-WASI-RUNTIME"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-11-09-opensteward-small-maintenance-review"
+acceptance_refs = ["docs/governance/runtime-resource-patch-validation.md"]
+evidence_refs = ["Cargo.toml", "Cargo.lock", "src/runtime.rs", "tests/runtime.rs"]
