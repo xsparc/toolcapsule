@@ -146,3 +146,5 @@ See [configuration contracts](docs/configuration-contracts.md) for the latest of
 See [retained configuration verification](docs/retained-configuration.md) for retained evidence checks and their limits.
 
 See [Configuration difference](docs/configuration-difference.md) for the retained-evidence workflow and its limits.
+
+See [Retained differences](docs/retained-differences.md) for the verification workflow and evidence limits.

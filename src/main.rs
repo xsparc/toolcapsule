@@ -26,6 +26,14 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    /// Check a retained difference without executing or rewriting evidence.
+    ConfigurationDiffCheck { report: PathBuf },
+    /// Verify a difference against explicit before/after configuration summaries.
+    ConfigurationDiffVerify {
+        report: PathBuf,
+        before: PathBuf,
+        after: PathBuf,
+    },
     /// Compare two retained configuration summaries without inferring authority.
     ConfigurationDiff {
         before: PathBuf,
@@ -258,7 +266,9 @@ fn print_json(value: &impl serde::Serialize) -> Result<(), Error> {
 async fn main() -> std::process::ExitCode {
     let cli = Cli::parse();
     let diagnostic = match &cli.command {
-        Command::ConfigurationDiff { .. } => Some("configuration_difference"),
+        Command::ConfigurationDiff { .. }
+        | Command::ConfigurationDiffCheck { .. }
+        | Command::ConfigurationDiffVerify { .. } => Some("configuration_difference"),
         Command::ConfigurationResultCheck { .. } | Command::ConfigurationResultVerify { .. } => {
             Some("configuration_result")
         }
@@ -303,6 +313,31 @@ fn json_error(kind: &str, code: &str) {
 
 async fn execute(cli: Cli) -> Result<u8, Error> {
     match cli.command {
+        Command::ConfigurationDiffCheck { report } => {
+            configuration_diff::read_difference(&read_file(
+                &report,
+                configuration_diff::MAX_DIFF_BYTES,
+            )?)?;
+            print_json(
+                &serde_json::json!({"schema_version":1,"kind":"configuration_difference","verified":true,
+                "interpretation":"summary_changes_not_source_identity_or_authority"}),
+            )?;
+        }
+        Command::ConfigurationDiffVerify {
+            report,
+            before,
+            after,
+        } => {
+            configuration_diff::verify_difference(
+                &read_file(&report, configuration_diff::MAX_DIFF_BYTES)?,
+                &read_file(&before, configuration::MAX_RESULT_BYTES)?,
+                &read_file(&after, configuration::MAX_RESULT_BYTES)?,
+            )?;
+            print_json(
+                &serde_json::json!({"schema_version":1,"kind":"configuration_difference","verified":true,
+                "interpretation":"summary_changes_not_source_identity_or_authority"}),
+            )?;
+        }
         Command::ConfigurationDiffSchema => print_json(&configuration_diff::schema())?,
         Command::ConfigurationDiff { before, after, out } => {
             let bytes = configuration_diff::encode(
