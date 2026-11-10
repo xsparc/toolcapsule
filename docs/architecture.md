@@ -140,3 +140,9 @@ The shared next-five project tracker is `docs/next-milestone.md`; its tasks rema
 Implemented the saved review tasks. Decision: `docs/decisions/0019-difference-review.md`.
 Workflow: `docs/difference-review.md`. Verification and limits: `docs/governance/difference-review-validation.md`.
 The shared next-five project tracker is `docs/next-milestone.md`; those tasks remain planned.
+
+## TC025: Difference csv (2026-11-10)
+
+Implemented the saved portable review tasks. Decision: `docs/decisions/0020-difference-csv.md`.
+Workflow: `docs/difference-csv.md`. Verification and limits: `docs/governance/difference-csv-validation.md`.
+The next-five project tracker is `docs/next-milestone.md`; those tasks remain planned.
