@@ -150,3 +150,5 @@ See [Configuration difference](docs/configuration-difference.md) for the retaine
 See [Retained differences](docs/retained-differences.md) for the verification workflow and evidence limits.
 
 See [Difference review](docs/difference-review.md) for the bounded review workflow.
+
+See [Difference csv](docs/difference-csv.md) for the portable review workflow.

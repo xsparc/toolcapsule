@@ -599,3 +599,31 @@ roadmap_refs = ["docs/roadmap.md"]
 approval_ref = "conversation:2026-11-09-next-autonomous-milestone-and-draft-prs"
 acceptance_refs = ["docs/decisions/0019-difference-review.md"]
 evidence_refs = ["tests/configuration_review.rs", "docs/governance/difference-review-validation.md"]
+
+[[research_decisions]]
+id = "RD-DIFFERENCE-CSV"
+disposition = "adopted"
+source_refs = ["docs/governance/difference-csv-direction.md"]
+design_refs = ["docs/decisions/0020-difference-csv.md"]
+
+[[requirements]]
+id = "REQ-DIFFERENCE-CSV"
+statement = "Difference csv with bounded exact exports and independent source checks."
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0020-difference-csv.md"]
+risk_refs = ["docs/difference-csv.md"]
+implementation_refs = ["src/configuration_csv.rs", "src/main.rs"]
+verification_refs = ["tests/configuration_csv.rs"]
+validation_refs = ["docs/governance/difference-csv-validation.md"]
+
+[[work_items]]
+id = "TC025-DIFFERENCE-CSV"
+title = "Difference csv"
+status = "closed"
+requirement_ids = ["REQ-DIFFERENCE-CSV"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-11-10-next-autonomous-milestone-and-draft-prs"
+acceptance_refs = ["docs/decisions/0020-difference-csv.md"]
+evidence_refs = ["tests/configuration_csv.rs", "docs/governance/difference-csv-validation.md"]

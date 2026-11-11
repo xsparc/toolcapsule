@@ -26,6 +26,25 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    /// Export canonical CSV from a retained difference.
+    ConfigurationDiffCsv {
+        report: PathBuf,
+        #[arg(long)]
+        out: PathBuf,
+        #[arg(long)]
+        before: Option<PathBuf>,
+        #[arg(long)]
+        after: Option<PathBuf>,
+    },
+    /// Verify exact canonical CSV against a retained difference.
+    ConfigurationDiffCsvVerify {
+        report: PathBuf,
+        csv: PathBuf,
+        #[arg(long)]
+        before: Option<PathBuf>,
+        #[arg(long)]
+        after: Option<PathBuf>,
+    },
     /// Render a retained difference, optionally checked against two explicit summaries.
     ConfigurationDiffHtml {
         report: PathBuf,
@@ -276,7 +295,9 @@ fn print_json(value: &impl serde::Serialize) -> Result<(), Error> {
 async fn main() -> std::process::ExitCode {
     let cli = Cli::parse();
     let diagnostic = match &cli.command {
-        Command::ConfigurationDiffHtml { .. }
+        Command::ConfigurationDiffCsv { .. }
+        | Command::ConfigurationDiffCsvVerify { .. }
+        | Command::ConfigurationDiffHtml { .. }
         | Command::ConfigurationDiff { .. }
         | Command::ConfigurationDiffCheck { .. }
         | Command::ConfigurationDiffVerify { .. } => Some("configuration_difference"),
@@ -324,6 +345,38 @@ fn json_error(kind: &str, code: &str) {
 
 async fn execute(cli: Cli) -> Result<u8, Error> {
     match cli.command {
+        Command::ConfigurationDiffCsv {
+            report,
+            out,
+            before,
+            after,
+        } => {
+            let raw = read_file(&report, configuration_diff::MAX_DIFF_BYTES)?;
+            let sources = read_summary_pair(before, after)?;
+            let csv = configuration_csv::render(
+                &raw,
+                sources.as_ref().map(|(a, b)| (a.as_slice(), b.as_slice())),
+            )?;
+            write_new(&out, &csv)?;
+        }
+        Command::ConfigurationDiffCsvVerify {
+            report,
+            csv,
+            before,
+            after,
+        } => {
+            let raw = read_file(&report, configuration_diff::MAX_DIFF_BYTES)?;
+            let csv = read_file(&csv, configuration_csv::MAX_CSV_BYTES)?;
+            let sources = read_summary_pair(before, after)?;
+            configuration_csv::verify(
+                &raw,
+                &csv,
+                sources.as_ref().map(|(a, b)| (a.as_slice(), b.as_slice())),
+            )?;
+            print_json(
+                &serde_json::json!({"schema_version":1,"kind":"configuration_difference","verified":true,"interpretation":"summary_changes_not_source_identity_or_authority"}),
+            )?;
+        }
         Command::ConfigurationDiffHtml {
             report,
             out,
@@ -638,4 +691,20 @@ async fn execute(cli: Cli) -> Result<u8, Error> {
         }
     }
     Ok(0)
+}
+
+type SummaryPair = (Vec<u8>, Vec<u8>);
+
+fn read_summary_pair(
+    before: Option<PathBuf>,
+    after: Option<PathBuf>,
+) -> Result<Option<SummaryPair>, Error> {
+    match (before, after) {
+        (None, None) => Ok(None),
+        (Some(a), Some(b)) => Ok(Some((
+            read_file(&a, configuration::MAX_RESULT_BYTES)?,
+            read_file(&b, configuration::MAX_RESULT_BYTES)?,
+        ))),
+        _ => Err(Error::Format),
+    }
 }
