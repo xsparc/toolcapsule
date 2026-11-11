@@ -152,3 +152,5 @@ See [Retained differences](docs/retained-differences.md) for the verification wo
 See [Difference review](docs/difference-review.md) for the bounded review workflow.
 
 See [Difference csv](docs/difference-csv.md) for the portable review workflow.
+
+See [Difference identity](docs/difference-identity.md) for the retained review workflow.

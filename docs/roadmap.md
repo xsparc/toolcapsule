@@ -158,3 +158,9 @@ The shared next-five project tracker is `docs/next-milestone.md`; those tasks re
 Implemented the saved portable review tasks. Decision: `docs/decisions/0020-difference-csv.md`.
 Workflow: `docs/difference-csv.md`. Verification and limits: `docs/governance/difference-csv-validation.md`.
 The next-five project tracker is `docs/next-milestone.md`; those tasks remain planned.
+
+## TC026: Difference identity (2026-11-11)
+
+Implemented the saved handoff. Decision: `docs/decisions/0021-difference-identity.md`.
+Workflow and limitations: `docs/difference-identity.md`. Verification: `docs/governance/difference-identity-validation.md`.
+The next five planned tasks are tracked in `docs/next-milestone.md`.
