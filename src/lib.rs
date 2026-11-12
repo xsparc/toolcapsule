@@ -17,3 +17,5 @@ pub mod trust_check;
 pub use package::{
     Capabilities, Error, Limits, Manifest, Policy, SignedManifest, TrustStore, VerifiedPackage,
 };
+
+pub mod configuration_identity;

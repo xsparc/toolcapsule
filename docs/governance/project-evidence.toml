@@ -627,3 +627,31 @@ roadmap_refs = ["docs/roadmap.md"]
 approval_ref = "conversation:2026-11-10-next-autonomous-milestone-and-draft-prs"
 acceptance_refs = ["docs/decisions/0020-difference-csv.md"]
 evidence_refs = ["tests/configuration_csv.rs", "docs/governance/difference-csv-validation.md"]
+
+[[research_decisions]]
+id = "RD-DIFFERENCE-IDENTITY"
+disposition = "adopted"
+source_refs = ["docs/governance/difference-identity-direction.md"]
+design_refs = ["docs/decisions/0021-difference-identity.md"]
+
+[[requirements]]
+id = "REQ-DIFFERENCE-IDENTITY"
+statement = "Difference identity with bounded intake and independent evidence gates."
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0021-difference-identity.md"]
+risk_refs = ["docs/difference-identity.md"]
+implementation_refs = ["src/configuration_identity.rs", "src/main.rs"]
+verification_refs = ["tests/configuration_identity.rs"]
+validation_refs = ["docs/governance/difference-identity-validation.md"]
+
+[[work_items]]
+id = "TC026-DIFFERENCE-IDENTITY"
+title = "Difference identity"
+status = "closed"
+requirement_ids = ["REQ-DIFFERENCE-IDENTITY"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-11-11-next-autonomous-milestone-and-draft-prs"
+acceptance_refs = ["docs/decisions/0021-difference-identity.md"]
+evidence_refs = ["tests/configuration_identity.rs", "docs/governance/difference-identity-validation.md"]
