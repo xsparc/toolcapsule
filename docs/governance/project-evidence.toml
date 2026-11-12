@@ -655,3 +655,31 @@ roadmap_refs = ["docs/roadmap.md"]
 approval_ref = "conversation:2026-11-11-next-autonomous-milestone-and-draft-prs"
 acceptance_refs = ["docs/decisions/0021-difference-identity.md"]
 evidence_refs = ["tests/configuration_identity.rs", "docs/governance/difference-identity-validation.md"]
+
+[[research_decisions]]
+id = "RD-RETAINED-IDENTITY-HTML"
+disposition = "adopted"
+source_refs = ["docs/governance/retained-identity-html-direction.md"]
+design_refs = ["docs/decisions/0022-retained-identity-html.md"]
+
+[[requirements]]
+id = "REQ-RETAINED-IDENTITY-HTML"
+statement = "Retained identity html with bounded intake and explicit evidence checks."
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0022-retained-identity-html.md"]
+risk_refs = ["docs/retained-identity-html.md"]
+implementation_refs = ["src/configuration_identity.rs", "src/configuration_review.rs", "src/main.rs", "schemas/configuration-difference-identity.schema.json"]
+verification_refs = ["tests/retained_identity_html.rs"]
+validation_refs = ["docs/governance/retained-identity-html-validation.md"]
+
+[[work_items]]
+id = "TC027-RETAINED-IDENTITY-HTML"
+title = "Retained identity html"
+status = "closed"
+requirement_ids = ["REQ-RETAINED-IDENTITY-HTML"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-11-12-next-autonomous-milestone-and-draft-prs"
+acceptance_refs = ["docs/decisions/0022-retained-identity-html.md"]
+evidence_refs = ["tests/retained_identity_html.rs", "docs/governance/retained-identity-html-validation.md"]

@@ -32,3 +32,46 @@ pub fn verify_expected(raw: &[u8], expected: &str) -> Result<(), Error> {
     }
     Ok(())
 }
+
+pub const MAX_IDENTITY_BYTES: usize = 4096;
+
+#[derive(serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct IdentityRecord {
+    schema_version: u8,
+    kind: String,
+    encoding: String,
+    difference_sha256: String,
+    interpretation: String,
+}
+
+pub fn read_identity(raw: &[u8]) -> Result<IdentityRecord, Error> {
+    if raw.len() > MAX_IDENTITY_BYTES {
+        return Err(Error::InputLimit);
+    }
+    let record: IdentityRecord = serde_json::from_slice(raw).map_err(|_| Error::Format)?;
+    if record.schema_version != 1
+        || record.kind != "configuration_difference_identity"
+        || record.encoding != "toolcapsule_difference_v1"
+        || record.interpretation != "normalized_summary_identity_not_signature_or_source_identity"
+        || record.difference_sha256.len() != 64
+        || !record
+            .difference_sha256
+            .bytes()
+            .all(|c| c.is_ascii_digit() || (b'a'..=b'f').contains(&c))
+    {
+        return Err(Error::Format);
+    }
+    Ok(record)
+}
+
+pub fn verify_record(raw: &[u8], record: &[u8]) -> Result<(), Error> {
+    verify_expected(raw, &read_identity(record)?.difference_sha256)
+}
+
+pub fn schema() -> Value {
+    serde_json::from_str(include_str!(
+        "../schemas/configuration-difference-identity.schema.json"
+    ))
+    .expect("checked-in identity schema must be valid JSON")
+}

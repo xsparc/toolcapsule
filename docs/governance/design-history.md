@@ -103,3 +103,9 @@ The next-five project tracker is `docs/next-milestone.md`; those tasks remain pl
 Implemented the saved handoff. Decision: `docs/decisions/0021-difference-identity.md`.
 Workflow and limitations: `docs/difference-identity.md`. Verification: `docs/governance/difference-identity-validation.md`.
 The next five planned tasks are tracked in `docs/next-milestone.md`.
+
+## TC027: Retained identity html (2026-11-12)
+
+Implemented the saved handoff. Decision: `docs/decisions/0022-retained-identity-html.md`.
+Workflow and limitations: `docs/retained-identity-html.md`. Verification: `docs/governance/retained-identity-html-validation.md`.
+The next five planned tasks are tracked in `docs/next-milestone.md`.
