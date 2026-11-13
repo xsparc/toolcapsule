@@ -78,6 +78,17 @@ pub fn render(raw: &[u8], sources: Option<(&[u8], &[u8])>) -> Result<String, Err
     Ok(html)
 }
 
+/// Verify exact rendered bytes without parsing or repairing HTML.
+pub fn verify(raw: &[u8], html: &[u8], sources: Option<(&[u8], &[u8])>) -> Result<(), Error> {
+    if html.len() > MAX_HTML_BYTES {
+        return Err(Error::InputLimit);
+    }
+    if html != render(raw, sources)?.as_bytes() {
+        return Err(Error::Format);
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     #[test]

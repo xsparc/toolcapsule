@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Configuration difference identity",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "kind",
+    "encoding",
+    "interpretation",
+    "schema_version",
+    "difference_sha256"
+  ],
+  "properties": {
+    "kind": {
+      "type": "string",
+      "const": "configuration_difference_identity"
+    },
+    "encoding": {
+      "type": "string",
+      "const": "toolcapsule_difference_v1"
+    },
+    "interpretation": {
+      "type": "string",
+      "const": "normalized_summary_identity_not_signature_or_source_identity"
+    },
+    "schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "difference_sha256": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64,
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

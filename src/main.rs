@@ -24,8 +24,43 @@ struct Cli {
     command: Command,
 }
 
+#[derive(Args)]
+struct DifferenceIdentityGate {
+    #[arg(long, conflicts_with = "identity")]
+    expected_sha256: Option<String>,
+    #[arg(long)]
+    identity: Option<PathBuf>,
+}
+impl DifferenceIdentityGate {
+    fn verify(&self, raw: &[u8]) -> Result<(), Error> {
+        if let Some(expected) = &self.expected_sha256 {
+            configuration_identity::verify_expected(raw, expected)?;
+        }
+        if let Some(path) = &self.identity {
+            configuration_identity::verify_record(
+                raw,
+                &read_file(path, configuration_identity::MAX_IDENTITY_BYTES)?,
+            )?;
+        }
+        Ok(())
+    }
+}
+
 #[derive(Subcommand)]
 enum Command {
+    /// Print the closed retained difference identity schema.
+    ConfigurationDiffIdentitySchema,
+    /// Verify exact retained HTML, optionally checking source summaries and identity.
+    ConfigurationDiffHtmlVerify {
+        report: PathBuf,
+        html: PathBuf,
+        #[arg(long)]
+        before: Option<PathBuf>,
+        #[arg(long)]
+        after: Option<PathBuf>,
+        #[command(flatten)]
+        identity_gate: DifferenceIdentityGate,
+    },
     /// Print the normalized identity of a validated retained difference.
     ConfigurationDiffIdentity { report: PathBuf },
     /// Export canonical CSV from a retained difference.
@@ -37,8 +72,8 @@ enum Command {
         before: Option<PathBuf>,
         #[arg(long)]
         after: Option<PathBuf>,
-        #[arg(long)]
-        expected_sha256: Option<String>,
+        #[command(flatten)]
+        identity_gate: DifferenceIdentityGate,
     },
     /// Verify exact canonical CSV against a retained difference.
     ConfigurationDiffCsvVerify {
@@ -48,8 +83,8 @@ enum Command {
         before: Option<PathBuf>,
         #[arg(long)]
         after: Option<PathBuf>,
-        #[arg(long)]
-        expected_sha256: Option<String>,
+        #[command(flatten)]
+        identity_gate: DifferenceIdentityGate,
     },
     /// Render a retained difference, optionally checked against two explicit summaries.
     ConfigurationDiffHtml {
@@ -60,22 +95,22 @@ enum Command {
         before: Option<PathBuf>,
         #[arg(long)]
         after: Option<PathBuf>,
-        #[arg(long)]
-        expected_sha256: Option<String>,
+        #[command(flatten)]
+        identity_gate: DifferenceIdentityGate,
     },
     /// Check a retained difference without executing or rewriting evidence.
     ConfigurationDiffCheck {
         report: PathBuf,
-        #[arg(long)]
-        expected_sha256: Option<String>,
+        #[command(flatten)]
+        identity_gate: DifferenceIdentityGate,
     },
     /// Verify a difference against explicit before/after configuration summaries.
     ConfigurationDiffVerify {
         report: PathBuf,
         before: PathBuf,
         after: PathBuf,
-        #[arg(long)]
-        expected_sha256: Option<String>,
+        #[command(flatten)]
+        identity_gate: DifferenceIdentityGate,
     },
     /// Compare two retained configuration summaries without inferring authority.
     ConfigurationDiff {
@@ -309,7 +344,8 @@ fn print_json(value: &impl serde::Serialize) -> Result<(), Error> {
 async fn main() -> std::process::ExitCode {
     let cli = Cli::parse();
     let diagnostic = match &cli.command {
-        Command::ConfigurationDiffIdentity { .. }
+        Command::ConfigurationDiffHtmlVerify { .. }
+        | Command::ConfigurationDiffIdentity { .. }
         | Command::ConfigurationDiffCsv { .. }
         | Command::ConfigurationDiffCsvVerify { .. }
         | Command::ConfigurationDiffHtml { .. }
@@ -360,6 +396,26 @@ fn json_error(kind: &str, code: &str) {
 
 async fn execute(cli: Cli) -> Result<u8, Error> {
     match cli.command {
+        Command::ConfigurationDiffIdentitySchema => print_json(&configuration_identity::schema())?,
+        Command::ConfigurationDiffHtmlVerify {
+            report,
+            html,
+            before,
+            after,
+            identity_gate,
+        } => {
+            let raw = read_file(&report, configuration_diff::MAX_DIFF_BYTES)?;
+            identity_gate.verify(&raw)?;
+            let sources = read_summary_pair(before, after)?;
+            configuration_review::verify(
+                &raw,
+                &read_file(&html, configuration_review::MAX_HTML_BYTES)?,
+                sources.as_ref().map(|(a, b)| (a.as_slice(), b.as_slice())),
+            )?;
+            print_json(
+                &serde_json::json!({"schema_version":1,"kind":"configuration_difference","verified":true,"interpretation":"summary_changes_not_source_identity_or_authority"}),
+            )?;
+        }
         Command::ConfigurationDiffIdentity { report } => {
             print_json(&configuration_identity::identity(&read_file(
                 &report,
@@ -371,12 +427,10 @@ async fn execute(cli: Cli) -> Result<u8, Error> {
             out,
             before,
             after,
-            expected_sha256,
+            identity_gate,
         } => {
             let raw = read_file(&report, configuration_diff::MAX_DIFF_BYTES)?;
-            if let Some(expected) = expected_sha256 {
-                configuration_identity::verify_expected(&raw, &expected)?;
-            }
+            identity_gate.verify(&raw)?;
             let sources = read_summary_pair(before, after)?;
             let csv = configuration_csv::render(
                 &raw,
@@ -389,12 +443,10 @@ async fn execute(cli: Cli) -> Result<u8, Error> {
             csv,
             before,
             after,
-            expected_sha256,
+            identity_gate,
         } => {
             let raw = read_file(&report, configuration_diff::MAX_DIFF_BYTES)?;
-            if let Some(expected) = expected_sha256 {
-                configuration_identity::verify_expected(&raw, &expected)?;
-            }
+            identity_gate.verify(&raw)?;
             let csv = read_file(&csv, configuration_csv::MAX_CSV_BYTES)?;
             let sources = read_summary_pair(before, after)?;
             configuration_csv::verify(
@@ -411,12 +463,10 @@ async fn execute(cli: Cli) -> Result<u8, Error> {
             out,
             before,
             after,
-            expected_sha256,
+            identity_gate,
         } => {
             let raw = read_file(&report, configuration_diff::MAX_DIFF_BYTES)?;
-            if let Some(expected) = expected_sha256 {
-                configuration_identity::verify_expected(&raw, &expected)?;
-            }
+            identity_gate.verify(&raw)?;
             let sources = match (before, after) {
                 (None, None) => None,
                 (Some(before), Some(after)) => Some((
@@ -433,12 +483,10 @@ async fn execute(cli: Cli) -> Result<u8, Error> {
         }
         Command::ConfigurationDiffCheck {
             report,
-            expected_sha256,
+            identity_gate,
         } => {
             let raw = read_file(&report, configuration_diff::MAX_DIFF_BYTES)?;
-            if let Some(expected) = expected_sha256 {
-                configuration_identity::verify_expected(&raw, &expected)?;
-            }
+            identity_gate.verify(&raw)?;
             configuration_diff::read_difference(&raw)?;
             print_json(
                 &serde_json::json!({"schema_version":1,"kind":"configuration_difference","verified":true,
@@ -449,12 +497,10 @@ async fn execute(cli: Cli) -> Result<u8, Error> {
             report,
             before,
             after,
-            expected_sha256,
+            identity_gate,
         } => {
             let raw = read_file(&report, configuration_diff::MAX_DIFF_BYTES)?;
-            if let Some(expected) = expected_sha256 {
-                configuration_identity::verify_expected(&raw, &expected)?;
-            }
+            identity_gate.verify(&raw)?;
             configuration_diff::verify_difference(
                 &raw,
                 &read_file(&before, configuration::MAX_RESULT_BYTES)?,
