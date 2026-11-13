@@ -109,3 +109,9 @@ The next five planned tasks are tracked in `docs/next-milestone.md`.
 Implemented the saved handoff. Decision: `docs/decisions/0022-retained-identity-html.md`.
 Workflow and limitations: `docs/retained-identity-html.md`. Verification: `docs/governance/retained-identity-html-validation.md`.
 The next five planned tasks are tracked in `docs/next-milestone.md`.
+
+## TC028: Portable retained review (2026-11-13)
+
+Implemented the saved handoff. Decision: `docs/decisions/0023-portable-retained-review.md`.
+Workflow and limitations: `docs/portable-retained-review.md`. Verification: `docs/governance/portable-retained-review-validation.md`.
+The next five planned tasks are tracked in `docs/next-milestone.md`.

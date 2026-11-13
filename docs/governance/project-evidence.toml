@@ -683,3 +683,31 @@ roadmap_refs = ["docs/roadmap.md"]
 approval_ref = "conversation:2026-11-12-next-autonomous-milestone-and-draft-prs"
 acceptance_refs = ["docs/decisions/0022-retained-identity-html.md"]
 evidence_refs = ["tests/retained_identity_html.rs", "docs/governance/retained-identity-html-validation.md"]
+
+[[research_decisions]]
+id = "RD-PORTABLE-RETAINED-REVIEW"
+disposition = "adopted"
+source_refs = ["docs/governance/portable-retained-review-direction.md"]
+design_refs = ["docs/decisions/0023-portable-retained-review.md"]
+
+[[requirements]]
+id = "REQ-PORTABLE-RETAINED-REVIEW"
+statement = "Portable retained review with independent evidence checks and exclusive output."
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0023-portable-retained-review.md"]
+risk_refs = ["docs/portable-retained-review.md"]
+implementation_refs = ["src/main.rs", "examples/retained_review.rs", "examples/support/retained_review.rs"]
+verification_refs = ["tests/portable_retained_review.rs"]
+validation_refs = ["docs/governance/portable-retained-review-validation.md"]
+
+[[work_items]]
+id = "TC028-PORTABLE-RETAINED-REVIEW"
+title = "Portable retained review"
+status = "closed"
+requirement_ids = ["REQ-PORTABLE-RETAINED-REVIEW"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-11-13-next-autonomous-milestone-and-draft-prs"
+acceptance_refs = ["docs/decisions/0023-portable-retained-review.md"]
+evidence_refs = ["tests/portable_retained_review.rs", "docs/governance/portable-retained-review-validation.md"]
