@@ -62,7 +62,11 @@ enum Command {
         identity_gate: DifferenceIdentityGate,
     },
     /// Print the normalized identity of a validated retained difference.
-    ConfigurationDiffIdentity { report: PathBuf },
+    ConfigurationDiffIdentity {
+        report: PathBuf,
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
     /// Export canonical CSV from a retained difference.
     ConfigurationDiffCsv {
         report: PathBuf,
@@ -416,11 +420,19 @@ async fn execute(cli: Cli) -> Result<u8, Error> {
                 &serde_json::json!({"schema_version":1,"kind":"configuration_difference","verified":true,"interpretation":"summary_changes_not_source_identity_or_authority"}),
             )?;
         }
-        Command::ConfigurationDiffIdentity { report } => {
-            print_json(&configuration_identity::identity(&read_file(
+        Command::ConfigurationDiffIdentity { report, out } => {
+            let record = configuration_identity::identity(&read_file(
                 &report,
                 configuration_diff::MAX_DIFF_BYTES,
-            )?)?)?;
+            )?)?;
+            if let Some(path) = out {
+                let mut bytes = serde_json::to_vec_pretty(&record).map_err(|_| Error::Format)?;
+                bytes.push(b'\n');
+                configuration_identity::read_identity(&bytes)?;
+                write_new(&path, &bytes)?;
+            } else {
+                print_json(&record)?;
+            }
         }
         Command::ConfigurationDiffCsv {
             report,
