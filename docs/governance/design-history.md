@@ -115,3 +115,8 @@ The next five planned tasks are tracked in `docs/next-milestone.md`.
 Implemented the saved handoff. Decision: `docs/decisions/0023-portable-retained-review.md`.
 Workflow and limitations: `docs/portable-retained-review.md`. Verification: `docs/governance/portable-retained-review-validation.md`.
 The next five planned tasks are tracked in `docs/next-milestone.md`.
+
+## TC029: Summary bundles (2026-11-15)
+
+Implemented the accepted decision in `docs/decisions/0024-summary-bundles.md`. Evidence: `docs/governance/summary-bundles-validation.md`.
+The next five tasks are tracked in `docs/next-milestone.md`.

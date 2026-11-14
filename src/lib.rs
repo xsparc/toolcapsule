@@ -19,3 +19,5 @@ pub use package::{
 };
 
 pub mod configuration_identity;
+
+pub mod configuration_bundle;
