@@ -48,6 +48,23 @@ impl DifferenceIdentityGate {
 
 #[derive(Subcommand)]
 enum Command {
+    /// Print the portable summary bundle schema.
+    ConfigurationBundleSchema,
+    /// Retain two summaries and their recomputed difference.
+    ConfigurationBundle {
+        before: PathBuf,
+        after: PathBuf,
+        #[arg(long)]
+        out: PathBuf,
+    },
+    /// Verify a retained summary bundle, optionally against independent summaries.
+    ConfigurationBundleVerify {
+        report: PathBuf,
+        #[arg(long)]
+        before: Option<PathBuf>,
+        #[arg(long)]
+        after: Option<PathBuf>,
+    },
     /// Print the closed retained difference identity schema.
     ConfigurationDiffIdentitySchema,
     /// Verify exact retained HTML, optionally checking source summaries and identity.
@@ -348,6 +365,9 @@ fn print_json(value: &impl serde::Serialize) -> Result<(), Error> {
 async fn main() -> std::process::ExitCode {
     let cli = Cli::parse();
     let diagnostic = match &cli.command {
+        Command::ConfigurationBundle { .. } | Command::ConfigurationBundleVerify { .. } => {
+            Some("configuration_bundle")
+        }
         Command::ConfigurationDiffHtmlVerify { .. }
         | Command::ConfigurationDiffIdentity { .. }
         | Command::ConfigurationDiffCsv { .. }
@@ -400,6 +420,28 @@ fn json_error(kind: &str, code: &str) {
 
 async fn execute(cli: Cli) -> Result<u8, Error> {
     match cli.command {
+        Command::ConfigurationBundleSchema => print_json(&configuration_bundle::schema())?,
+        Command::ConfigurationBundle { before, after, out } => {
+            let bytes = configuration_bundle::encode(
+                &read_file(&before, configuration::MAX_RESULT_BYTES)?,
+                &read_file(&after, configuration::MAX_RESULT_BYTES)?,
+            )?;
+            write_new(&out, &bytes)?;
+        }
+        Command::ConfigurationBundleVerify {
+            report,
+            before,
+            after,
+        } => {
+            let raw = read_file(&report, configuration_bundle::MAX_BUNDLE_BYTES)?;
+            configuration_bundle::read_bundle(&raw)?;
+            if let Some((a, b)) = read_summary_pair(before, after)? {
+                configuration_bundle::verify_sources(&raw, &a, &b)?;
+            }
+            print_json(
+                &serde_json::json!({"schema_version":1,"kind":"configuration_bundle","verified":true,"interpretation":"summary_consistency_not_source_identity_or_authority"}),
+            )?;
+        }
         Command::ConfigurationDiffIdentitySchema => print_json(&configuration_identity::schema())?,
         Command::ConfigurationDiffHtmlVerify {
             report,

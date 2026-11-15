@@ -50,7 +50,7 @@ pub fn schema() -> Value {
 
 #[derive(Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
-struct RawDifference {
+pub(crate) struct RawDifference {
     schema_version: u8,
     kind: String,
     direction: String,

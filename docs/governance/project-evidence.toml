@@ -711,3 +711,31 @@ roadmap_refs = ["docs/roadmap.md"]
 approval_ref = "conversation:2026-11-13-next-autonomous-milestone-and-draft-prs"
 acceptance_refs = ["docs/decisions/0023-portable-retained-review.md"]
 evidence_refs = ["tests/portable_retained_review.rs", "docs/governance/portable-retained-review-validation.md"]
+
+[[research_decisions]]
+id = "RD-SUMMARY-BUNDLES"
+disposition = "adopted"
+source_refs = ["docs/governance/summary-bundles-direction.md"]
+design_refs = ["docs/decisions/0024-summary-bundles.md"]
+
+[[requirements]]
+id = "REQ-SUMMARY-BUNDLES"
+statement = "Summary bundles with bounded validation and explicit retained-evidence semantics."
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0024-summary-bundles.md"]
+risk_refs = ["docs/summary-bundles.md"]
+implementation_refs = ["src/configuration_bundle.rs", "src/main.rs", "schemas/configuration-summary-bundle.schema.json"]
+verification_refs = ["tests/configuration_bundle.rs"]
+validation_refs = ["docs/governance/summary-bundles-validation.md"]
+
+[[work_items]]
+id = "TC029-SUMMARY-BUNDLES"
+title = "Summary bundles"
+status = "closed"
+requirement_ids = ["REQ-SUMMARY-BUNDLES"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-11-15-next-autonomous-milestone-and-draft-prs"
+acceptance_refs = ["docs/decisions/0024-summary-bundles.md"]
+evidence_refs = ["tests/configuration_bundle.rs", "docs/governance/summary-bundles-validation.md"]
