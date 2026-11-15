@@ -48,6 +48,29 @@ impl DifferenceIdentityGate {
 
 #[derive(Subcommand)]
 enum Command {
+    /// Render a validated bundle without executing a guest.
+    ConfigurationBundleRender {
+        report: PathBuf,
+        #[arg(long, value_parser = ["html", "csv"], default_value = "html")]
+        format: String,
+        #[arg(long)]
+        out: PathBuf,
+        #[arg(long)]
+        before: Option<PathBuf>,
+        #[arg(long)]
+        after: Option<PathBuf>,
+    },
+    /// Check exact retained HTML or CSV bytes against a validated bundle.
+    ConfigurationBundleVerifyExport {
+        report: PathBuf,
+        export: PathBuf,
+        #[arg(long, value_parser = ["html", "csv"])]
+        format: String,
+        #[arg(long)]
+        before: Option<PathBuf>,
+        #[arg(long)]
+        after: Option<PathBuf>,
+    },
     /// Print the portable summary bundle schema.
     ConfigurationBundleSchema,
     /// Retain two summaries and their recomputed difference.
@@ -365,9 +388,10 @@ fn print_json(value: &impl serde::Serialize) -> Result<(), Error> {
 async fn main() -> std::process::ExitCode {
     let cli = Cli::parse();
     let diagnostic = match &cli.command {
-        Command::ConfigurationBundle { .. } | Command::ConfigurationBundleVerify { .. } => {
-            Some("configuration_bundle")
-        }
+        Command::ConfigurationBundleRender { .. }
+        | Command::ConfigurationBundleVerifyExport { .. }
+        | Command::ConfigurationBundle { .. }
+        | Command::ConfigurationBundleVerify { .. } => Some("configuration_bundle"),
         Command::ConfigurationDiffHtmlVerify { .. }
         | Command::ConfigurationDiffIdentity { .. }
         | Command::ConfigurationDiffCsv { .. }
@@ -420,6 +444,34 @@ fn json_error(kind: &str, code: &str) {
 
 async fn execute(cli: Cli) -> Result<u8, Error> {
     match cli.command {
+        Command::ConfigurationBundleRender {
+            report,
+            format,
+            out,
+            before,
+            after,
+        } => {
+            let raw = read_file(&report, configuration_bundle::MAX_BUNDLE_BYTES)?;
+            let sources = read_summary_pair(before, after)?;
+            let pair = sources.as_ref().map(|(a, b)| (a.as_slice(), b.as_slice()));
+            write_new(&out, &configuration_bundle::render(&raw, &format, pair)?)?;
+        }
+        Command::ConfigurationBundleVerifyExport {
+            report,
+            export,
+            format,
+            before,
+            after,
+        } => {
+            let raw = read_file(&report, configuration_bundle::MAX_BUNDLE_BYTES)?;
+            let retained = read_file(&export, configuration_review::MAX_HTML_BYTES)?;
+            let sources = read_summary_pair(before, after)?;
+            let pair = sources.as_ref().map(|(a, b)| (a.as_slice(), b.as_slice()));
+            configuration_bundle::verify_export(&raw, &retained, &format, pair)?;
+            print_json(
+                &serde_json::json!({"schema_version":1,"verified":true,"kind":"configuration_bundle_export","interpretation":"summary_consistency_not_source_identity_or_authority"}),
+            )?;
+        }
         Command::ConfigurationBundleSchema => print_json(&configuration_bundle::schema())?,
         Command::ConfigurationBundle { before, after, out } => {
             let bytes = configuration_bundle::encode(

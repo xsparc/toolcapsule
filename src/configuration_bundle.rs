@@ -62,3 +62,32 @@ pub fn schema() -> Value {
     ))
     .expect("checked bundle schema")
 }
+
+/// Render using the existing difference format; source status is explicit in HTML.
+pub fn render(raw: &[u8], format: &str, sources: Option<(&[u8], &[u8])>) -> Result<Vec<u8>, Error> {
+    let bundle = read_bundle(raw)?;
+    if let Some((before, after)) = sources {
+        verify_sources(raw, before, after)?;
+    }
+    let difference = serde_json::to_vec(&bundle["difference"]).map_err(|_| Error::Format)?;
+    match format {
+        "html" => Ok(crate::configuration_review::render(&difference, sources)?.into_bytes()),
+        "csv" => crate::configuration_csv::render(&difference, sources),
+        _ => Err(Error::Format),
+    }
+}
+
+pub fn verify_export(
+    raw: &[u8],
+    export: &[u8],
+    format: &str,
+    sources: Option<(&[u8], &[u8])>,
+) -> Result<(), Error> {
+    if export.len() > crate::configuration_review::MAX_HTML_BYTES {
+        return Err(Error::InputLimit);
+    }
+    if export != render(raw, format, sources)? {
+        return Err(Error::Format);
+    }
+    Ok(())
+}
