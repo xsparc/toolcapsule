@@ -160,3 +160,5 @@ See [Retained identity html](docs/retained-identity-html.md) for the retained ev
 See [Portable retained review](docs/portable-retained-review.md) for the portable review workflow.
 
 [Summary bundles](docs/summary-bundles.md) documents the new portable review commands and limits.
+
+[Bundle review](docs/bundle-review.md) documents the portable review commands and their limits.

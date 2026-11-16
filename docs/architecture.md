@@ -169,3 +169,8 @@ The next five planned tasks are tracked in `docs/next-milestone.md`.
 
 Implemented the accepted decision in `docs/decisions/0024-summary-bundles.md`. Evidence: `docs/governance/summary-bundles-validation.md`.
 The next five tasks are tracked in `docs/next-milestone.md`.
+
+## TC030: Bundle review (2026-11-15)
+
+Implemented `docs/decisions/0025-bundle-review.md`. Workflow: `docs/bundle-review.md`.
+Verification: `docs/governance/bundle-review-validation.md`. Next five tasks: `docs/next-milestone.md`.

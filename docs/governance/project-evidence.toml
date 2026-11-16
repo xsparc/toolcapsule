@@ -739,3 +739,31 @@ roadmap_refs = ["docs/roadmap.md"]
 approval_ref = "conversation:2026-11-15-next-autonomous-milestone-and-draft-prs"
 acceptance_refs = ["docs/decisions/0024-summary-bundles.md"]
 evidence_refs = ["tests/configuration_bundle.rs", "docs/governance/summary-bundles-validation.md"]
+
+[[research_decisions]]
+id = "RD-BUNDLE-REVIEW"
+disposition = "adopted"
+source_refs = ["docs/governance/bundle-review-direction.md"]
+design_refs = ["docs/decisions/0025-bundle-review.md"]
+
+[[requirements]]
+id = "REQ-BUNDLE-REVIEW"
+statement = "Bundle review with bounded validation and explicit retained-evidence semantics."
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0025-bundle-review.md"]
+risk_refs = ["docs/bundle-review.md"]
+implementation_refs = ["src/configuration_bundle.rs", "src/main.rs"]
+verification_refs = ["tests/bundle_review.rs"]
+validation_refs = ["docs/governance/bundle-review-validation.md"]
+
+[[work_items]]
+id = "TC030-BUNDLE-REVIEW"
+title = "Bundle review"
+status = "closed"
+requirement_ids = ["REQ-BUNDLE-REVIEW"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-11-15-next-autonomous-milestone-and-draft-prs"
+acceptance_refs = ["docs/decisions/0025-bundle-review.md"]
+evidence_refs = ["tests/bundle_review.rs", "docs/governance/bundle-review-validation.md"]
