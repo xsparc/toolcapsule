@@ -162,3 +162,5 @@ See [Portable retained review](docs/portable-retained-review.md) for the portabl
 [Summary bundles](docs/summary-bundles.md) documents the new portable review commands and limits.
 
 [Bundle review](docs/bundle-review.md) documents the portable review commands and their limits.
+
+[Bundle identity](docs/bundle-identity.md) documents the new behavior and limits.

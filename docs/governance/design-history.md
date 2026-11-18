@@ -125,3 +125,8 @@ The next five tasks are tracked in `docs/next-milestone.md`.
 
 Implemented `docs/decisions/0025-bundle-review.md`. Workflow: `docs/bundle-review.md`.
 Verification: `docs/governance/bundle-review-validation.md`. Next five tasks: `docs/next-milestone.md`.
+
+## TC031: Bundle identity (2026-11-18)
+
+Implemented `docs/decisions/0026-bundle-identity.md`. Workflow: `docs/bundle-identity.md`.
+Evidence: `docs/governance/bundle-identity-validation.md`. Next five tasks: `docs/next-milestone.md`.
