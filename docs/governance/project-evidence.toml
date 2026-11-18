@@ -767,3 +767,31 @@ roadmap_refs = ["docs/roadmap.md"]
 approval_ref = "conversation:2026-11-15-next-autonomous-milestone-and-draft-prs"
 acceptance_refs = ["docs/decisions/0025-bundle-review.md"]
 evidence_refs = ["tests/bundle_review.rs", "docs/governance/bundle-review-validation.md"]
+
+[[research_decisions]]
+id = "RD-BUNDLE-IDENTITY"
+disposition = "adopted"
+source_refs = ["docs/governance/bundle-identity-direction.md"]
+design_refs = ["docs/decisions/0026-bundle-identity.md"]
+
+[[requirements]]
+id = "REQ-BUNDLE-IDENTITY"
+statement = "Bundle identity with bounded validation and explicit evidence semantics."
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/decisions/0026-bundle-identity.md"]
+risk_refs = ["docs/bundle-identity.md"]
+implementation_refs = ["src/bundle_identity.rs", "src/main.rs", "schemas/configuration-bundle-identity.schema.json", "examples/support/bundle_review.rs"]
+verification_refs = ["tests/bundle_identity.rs", "tests/portable_bundle_review.rs"]
+validation_refs = ["docs/governance/bundle-identity-validation.md"]
+
+[[work_items]]
+id = "TC031-BUNDLE-IDENTITY"
+title = "Bundle identity"
+status = "closed"
+requirement_ids = ["REQ-BUNDLE-IDENTITY"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-11-18-next-autonomous-milestone-and-draft-prs"
+acceptance_refs = ["docs/decisions/0026-bundle-identity.md"]
+evidence_refs = ["tests/bundle_identity.rs", "tests/portable_bundle_review.rs", "docs/governance/bundle-identity-validation.md"]

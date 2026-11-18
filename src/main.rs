@@ -46,8 +46,38 @@ impl DifferenceIdentityGate {
     }
 }
 
+#[derive(Args)]
+struct BundleIdentityGate {
+    #[arg(long, conflicts_with = "identity")]
+    expected_sha256: Option<String>,
+    #[arg(long)]
+    identity: Option<PathBuf>,
+}
+impl BundleIdentityGate {
+    fn verify(&self, raw: &[u8]) -> Result<(), Error> {
+        if let Some(expected) = &self.expected_sha256 {
+            bundle_identity::verify_expected(raw, expected)?;
+        }
+        if let Some(path) = &self.identity {
+            bundle_identity::verify_record(
+                raw,
+                &read_file(path, bundle_identity::MAX_IDENTITY_BYTES)?,
+            )?;
+        }
+        Ok(())
+    }
+}
+
 #[derive(Subcommand)]
 enum Command {
+    /// Print the closed summary bundle identity schema.
+    ConfigurationBundleIdentitySchema,
+    /// Print or exclusively export normalized bundle identity.
+    ConfigurationBundleIdentity {
+        report: PathBuf,
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
     /// Render a validated bundle without executing a guest.
     ConfigurationBundleRender {
         report: PathBuf,
@@ -59,6 +89,8 @@ enum Command {
         before: Option<PathBuf>,
         #[arg(long)]
         after: Option<PathBuf>,
+        #[command(flatten)]
+        gate: BundleIdentityGate,
     },
     /// Check exact retained HTML or CSV bytes against a validated bundle.
     ConfigurationBundleVerifyExport {
@@ -70,6 +102,8 @@ enum Command {
         before: Option<PathBuf>,
         #[arg(long)]
         after: Option<PathBuf>,
+        #[command(flatten)]
+        gate: BundleIdentityGate,
     },
     /// Print the portable summary bundle schema.
     ConfigurationBundleSchema,
@@ -87,6 +121,8 @@ enum Command {
         before: Option<PathBuf>,
         #[arg(long)]
         after: Option<PathBuf>,
+        #[command(flatten)]
+        gate: BundleIdentityGate,
     },
     /// Print the closed retained difference identity schema.
     ConfigurationDiffIdentitySchema,
@@ -388,7 +424,8 @@ fn print_json(value: &impl serde::Serialize) -> Result<(), Error> {
 async fn main() -> std::process::ExitCode {
     let cli = Cli::parse();
     let diagnostic = match &cli.command {
-        Command::ConfigurationBundleRender { .. }
+        Command::ConfigurationBundleIdentity { .. }
+        | Command::ConfigurationBundleRender { .. }
         | Command::ConfigurationBundleVerifyExport { .. }
         | Command::ConfigurationBundle { .. }
         | Command::ConfigurationBundleVerify { .. } => Some("configuration_bundle"),
@@ -444,14 +481,29 @@ fn json_error(kind: &str, code: &str) {
 
 async fn execute(cli: Cli) -> Result<u8, Error> {
     match cli.command {
+        Command::ConfigurationBundleIdentitySchema => print_json(&bundle_identity::schema())?,
+        Command::ConfigurationBundleIdentity { report, out } => {
+            let raw = read_file(&report, configuration_bundle::MAX_BUNDLE_BYTES)?;
+            let record = bundle_identity::identity(&raw)?;
+            if let Some(path) = out {
+                let mut bytes = serde_json::to_vec_pretty(&record).map_err(|_| Error::Format)?;
+                bytes.push(b'\n');
+                bundle_identity::read_identity(&bytes)?;
+                write_new(&path, &bytes)?;
+            } else {
+                print_json(&record)?;
+            }
+        }
         Command::ConfigurationBundleRender {
             report,
             format,
             out,
             before,
             after,
+            gate,
         } => {
             let raw = read_file(&report, configuration_bundle::MAX_BUNDLE_BYTES)?;
+            gate.verify(&raw)?;
             let sources = read_summary_pair(before, after)?;
             let pair = sources.as_ref().map(|(a, b)| (a.as_slice(), b.as_slice()));
             write_new(&out, &configuration_bundle::render(&raw, &format, pair)?)?;
@@ -462,8 +514,10 @@ async fn execute(cli: Cli) -> Result<u8, Error> {
             format,
             before,
             after,
+            gate,
         } => {
             let raw = read_file(&report, configuration_bundle::MAX_BUNDLE_BYTES)?;
+            gate.verify(&raw)?;
             let retained = read_file(&export, configuration_review::MAX_HTML_BYTES)?;
             let sources = read_summary_pair(before, after)?;
             let pair = sources.as_ref().map(|(a, b)| (a.as_slice(), b.as_slice()));
@@ -484,8 +538,10 @@ async fn execute(cli: Cli) -> Result<u8, Error> {
             report,
             before,
             after,
+            gate,
         } => {
             let raw = read_file(&report, configuration_bundle::MAX_BUNDLE_BYTES)?;
+            gate.verify(&raw)?;
             configuration_bundle::read_bundle(&raw)?;
             if let Some((a, b)) = read_summary_pair(before, after)? {
                 configuration_bundle::verify_sources(&raw, &a, &b)?;
