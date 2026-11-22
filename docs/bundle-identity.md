@@ -30,3 +30,21 @@ non-executing review commands. It tests both formats, output collisions, consist
 replacement and byte preservation. On Windows use target/debug/toolcapsule.exe.
 HTML verification retains the same explicit-source mode as rendering. Identity
 proves normalized content consistency, not original source identity or signatures.
+
+## Read the verification scope
+
+Successful `configuration-bundle-verify` and
+`configuration-bundle-verify-export` responses include two additive booleans:
+
+| Field | True only when |
+| --- | --- |
+| `source_checked` | Both supplied summaries were checked against the bundle. |
+| `identity_checked` | The bundle matched an explicit expected digest or an identity file. |
+
+Both are false in standalone mode. The export command also checks the retained
+export bytes against the rendered result. A failed check emits no success JSON.
+The flags record what was compared, not who controlled the comparison inputs.
+Retain the summaries or identity target independently if substitution is a
+concern. Neither flag establishes authorship, signer trust, or execution
+authority. Consumers handling older responses should treat a missing flag as
+unknown, not as a verified check.

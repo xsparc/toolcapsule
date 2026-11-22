@@ -54,7 +54,7 @@ struct BundleIdentityGate {
     identity: Option<PathBuf>,
 }
 impl BundleIdentityGate {
-    fn verify(&self, raw: &[u8]) -> Result<(), Error> {
+    fn verify(&self, raw: &[u8]) -> Result<bool, Error> {
         if let Some(expected) = &self.expected_sha256 {
             bundle_identity::verify_expected(raw, expected)?;
         }
@@ -64,7 +64,7 @@ impl BundleIdentityGate {
                 &read_file(path, bundle_identity::MAX_IDENTITY_BYTES)?,
             )?;
         }
-        Ok(())
+        Ok(self.expected_sha256.is_some() || self.identity.is_some())
     }
 }
 
@@ -517,13 +517,14 @@ async fn execute(cli: Cli) -> Result<u8, Error> {
             gate,
         } => {
             let raw = read_file(&report, configuration_bundle::MAX_BUNDLE_BYTES)?;
-            gate.verify(&raw)?;
+            let identity_checked = gate.verify(&raw)?;
             let retained = read_file(&export, configuration_review::MAX_HTML_BYTES)?;
             let sources = read_summary_pair(before, after)?;
             let pair = sources.as_ref().map(|(a, b)| (a.as_slice(), b.as_slice()));
             configuration_bundle::verify_export(&raw, &retained, &format, pair)?;
             print_json(
-                &serde_json::json!({"schema_version":1,"verified":true,"kind":"configuration_bundle_export","interpretation":"summary_consistency_not_source_identity_or_authority"}),
+                &serde_json::json!({"schema_version":1,"verified":true,"kind":"configuration_bundle_export",
+                "source_checked":sources.is_some(),"identity_checked":identity_checked,"interpretation":"summary_consistency_not_source_identity_or_authority"}),
             )?;
         }
         Command::ConfigurationBundleSchema => print_json(&configuration_bundle::schema())?,
@@ -541,13 +542,15 @@ async fn execute(cli: Cli) -> Result<u8, Error> {
             gate,
         } => {
             let raw = read_file(&report, configuration_bundle::MAX_BUNDLE_BYTES)?;
-            gate.verify(&raw)?;
+            let identity_checked = gate.verify(&raw)?;
             configuration_bundle::read_bundle(&raw)?;
-            if let Some((a, b)) = read_summary_pair(before, after)? {
-                configuration_bundle::verify_sources(&raw, &a, &b)?;
+            let sources = read_summary_pair(before, after)?;
+            if let Some((a, b)) = &sources {
+                configuration_bundle::verify_sources(&raw, a, b)?;
             }
             print_json(
-                &serde_json::json!({"schema_version":1,"kind":"configuration_bundle","verified":true,"interpretation":"summary_consistency_not_source_identity_or_authority"}),
+                &serde_json::json!({"schema_version":1,"kind":"configuration_bundle","verified":true,
+                "source_checked":sources.is_some(),"identity_checked":identity_checked,"interpretation":"summary_consistency_not_source_identity_or_authority"}),
             )?;
         }
         Command::ConfigurationDiffIdentitySchema => print_json(&configuration_identity::schema())?,
