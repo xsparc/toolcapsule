@@ -1,6 +1,7 @@
 use serde_json::json;
 use toolcapsule::{
     bundle_identity::{identity, read_identity, schema, verify_expected, verify_record},
+    bundle_verification::{self, MAX_RESPONSE_BYTES, VerificationKind, read_response},
     configuration_bundle::encode,
 };
 fn pair() -> (Vec<u8>, Vec<u8>) {
@@ -229,6 +230,17 @@ fn verification_reports_only_checks_that_passed() {
                 args.extend_from_slice(identity_args);
                 let output = run(&args);
                 assert!(output.status.success(), "{args:?}");
+                let checked = read_response(&output.stdout).unwrap();
+                assert_eq!(
+                    checked.kind,
+                    if report_mode {
+                        VerificationKind::ConfigurationBundle
+                    } else {
+                        VerificationKind::ConfigurationBundleExport
+                    }
+                );
+                assert_eq!(checked.source_checked, source_checked);
+                assert_eq!(checked.identity_checked, !identity_args.is_empty());
                 assert_eq!(
                     serde_json::from_slice::<serde_json::Value>(&output.stdout).unwrap(),
                     json!({
@@ -267,4 +279,81 @@ fn verification_reports_only_checks_that_passed() {
     ]);
     assert_eq!(output.status.code(), Some(2));
     assert!(output.stdout.is_empty());
+}
+
+#[test]
+fn verification_response_reader_is_closed_and_bounded() {
+    let valid = json!({
+        "schema_version": 1,
+        "kind": "configuration_bundle",
+        "verified": true,
+        "source_checked": false,
+        "identity_checked": true,
+        "interpretation": "summary_consistency_not_source_identity_or_authority"
+    });
+    let encode = |value: &serde_json::Value| serde_json::to_vec(value).unwrap();
+    let raw = encode(&valid);
+    assert!(read_response(&raw).is_ok());
+    let schema = bundle_verification::schema();
+    assert_eq!(schema["additionalProperties"], false);
+    let properties = &schema["properties"];
+    assert_eq!(properties["schema_version"]["const"], 1);
+    assert_eq!(properties["schema_version"]["type"], "integer");
+    assert_eq!(properties["verified"]["const"], true);
+    assert_eq!(properties["source_checked"]["type"], "boolean");
+    assert_eq!(properties["identity_checked"]["type"], "boolean");
+    assert_eq!(
+        properties["kind"]["enum"],
+        json!(["configuration_bundle", "configuration_bundle_export"])
+    );
+    assert_eq!(
+        properties["interpretation"]["const"],
+        valid["interpretation"]
+    );
+    let required = schema["required"].as_array().unwrap();
+    assert_eq!(required.len(), valid.as_object().unwrap().len());
+    for field in valid.as_object().unwrap().keys() {
+        assert!(required.contains(&json!(field)));
+        let mut missing = valid.clone();
+        missing.as_object_mut().unwrap().remove(field);
+        assert!(read_response(&encode(&missing)).is_err(), "{field}");
+        let duplicate = format!(
+            "{{{}:{},{}",
+            json!(field),
+            valid[field],
+            std::str::from_utf8(&raw[1..]).unwrap()
+        );
+        assert!(read_response(duplicate.as_bytes()).is_err(), "{field}");
+    }
+    for (field, value) in [
+        ("schema_version", json!(2)),
+        ("schema_version", json!(1.0)),
+        ("verified", json!(false)),
+        ("kind", json!("configuration_bundle_identity")),
+        ("identity_checked", json!("true")),
+        ("source_checked", json!(null)),
+        ("interpretation", json!("trusted_producer")),
+        ("authoritative", json!(true)),
+    ] {
+        let mut malformed = valid.clone();
+        malformed[field] = value;
+        assert!(read_response(&encode(&malformed)).is_err(), "{field}");
+    }
+    let mut padded = raw;
+    padded.resize(MAX_RESPONSE_BYTES, b' ');
+    assert!(read_response(&padded).is_ok());
+    padded.push(b' ');
+    assert!(matches!(
+        read_response(&padded),
+        Err(toolcapsule::Error::InputLimit)
+    ));
+    let output = std::process::Command::new(env!("CARGO_BIN_EXE_toolcapsule"))
+        .arg("configuration-bundle-verification-schema")
+        .output()
+        .unwrap();
+    assert!(output.status.success());
+    assert_eq!(
+        serde_json::from_slice::<serde_json::Value>(&output.stdout).unwrap(),
+        schema,
+    );
 }

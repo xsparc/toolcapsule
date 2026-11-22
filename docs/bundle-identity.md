@@ -48,3 +48,14 @@ Retain the summaries or identity target independently if substitution is a
 concern. Neither flag establishes authorship, signer trust, or execution
 authority. Consumers handling older responses should treat a missing flag as
 unknown, not as a verified check.
+
+Use `toolcapsule configuration-bundle-verification-schema` to inspect the
+[version-1 response schema](../schemas/configuration-bundle-verification.schema.json).
+Rust consumers can use `bundle_verification::read_response` for bounded,
+strict parsing. It rejects response bodies larger than 4096 bytes and records
+with unknown or duplicate keys, missing flags, unsupported versions, or
+non-boolean scope. JSON Schema operates on already parsed data: use the
+strict reader when validating the raw encoding, including duplicate keys
+and the integer version token. Older responses without scope are not valid
+under this closed contract. Parsing a response only checks its shape and
+claims; it does not repeat the checks or authenticate the producer.
