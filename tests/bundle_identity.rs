@@ -154,3 +154,117 @@ fn cli_digest_gates_reject_ambiguity_before_output() {
         schema()
     );
 }
+
+#[test]
+fn verification_reports_only_checks_that_passed() {
+    let d = tempfile::tempdir().unwrap();
+    let (a, b) = pair();
+    let raw = encode(&a, &b).unwrap();
+    let record = identity(&raw).unwrap();
+    let digest = record["bundle_sha256"].as_str().unwrap();
+
+    for (name, bytes) in [
+        ("bundle", raw.as_slice()),
+        ("before", a.as_slice()),
+        ("after", b.as_slice()),
+    ] {
+        std::fs::write(d.path().join(name), bytes).unwrap();
+    }
+    std::fs::write(
+        d.path().join("identity"),
+        serde_json::to_vec(&record).unwrap(),
+    )
+    .unwrap();
+    for (name, sources) in [
+        ("standalone", None),
+        ("with-sources", Some((a.as_slice(), b.as_slice()))),
+    ] {
+        std::fs::write(
+            d.path().join(name),
+            toolcapsule::configuration_bundle::render(&raw, "html", sources).unwrap(),
+        )
+        .unwrap();
+    }
+
+    let run = |args: &[&str]| {
+        std::process::Command::new(env!("CARGO_BIN_EXE_toolcapsule"))
+            .current_dir(d.path())
+            .args(args)
+            .output()
+            .unwrap()
+    };
+    let wrong_digest = "0".repeat(64);
+    for (report_mode, export, kind) in [
+        (false, "standalone", "configuration_bundle_export"),
+        (true, "standalone", "configuration_bundle"),
+    ] {
+        let base = |export_name| {
+            if report_mode {
+                vec!["configuration-bundle-verify", "bundle"]
+            } else {
+                vec![
+                    "configuration-bundle-verify-export",
+                    "bundle",
+                    export_name,
+                    "--format",
+                    "html",
+                ]
+            }
+        };
+        for source_checked in [false, true] {
+            let export_name = if source_checked {
+                "with-sources"
+            } else {
+                export
+            };
+            for identity_args in [
+                &[][..],
+                &["--expected-sha256", digest],
+                &["--identity", "identity"],
+            ] {
+                let mut args = base(export_name);
+                if source_checked {
+                    args.extend(["--before", "before", "--after", "after"]);
+                }
+                args.extend_from_slice(identity_args);
+                let output = run(&args);
+                assert!(output.status.success(), "{args:?}");
+                assert_eq!(
+                    serde_json::from_slice::<serde_json::Value>(&output.stdout).unwrap(),
+                    json!({
+                        "schema_version": 1,
+                        "kind": kind,
+                        "verified": true,
+                        "source_checked": source_checked,
+                        "identity_checked": !identity_args.is_empty(),
+                        "interpretation": "summary_consistency_not_source_identity_or_authority"
+                    })
+                );
+            }
+        }
+        for extra in [
+            &["--before", "before"][..],
+            &["--before", "after", "--after", "before"],
+            &["--expected-sha256", wrong_digest.as_str()],
+        ] {
+            let mut args = base(export);
+            args.extend_from_slice(extra);
+            let output = run(&args);
+            assert_eq!(output.status.code(), Some(2), "{args:?}");
+            assert!(output.stdout.is_empty(), "{args:?}");
+        }
+    }
+    let output = run(&[
+        "configuration-bundle-verify-export",
+        "bundle",
+        "standalone",
+        "--format",
+        "html",
+        "--before",
+        "before",
+        "--after",
+        "after",
+    ]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+}
