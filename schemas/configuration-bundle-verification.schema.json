@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ToolCapsule configuration bundle verification response",
+  "description": "A successful response records comparisons performed, not authority or independent custody.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "kind",
+    "verified",
+    "source_checked",
+    "identity_checked",
+    "interpretation"
+  ],
+  "properties": {
+    "schema_version": {"type": "integer", "const": 1},
+    "kind": {"enum": ["configuration_bundle", "configuration_bundle_export"]},
+    "verified": {"type": "boolean", "const": true},
+    "source_checked": {"type": "boolean"},
+    "identity_checked": {"type": "boolean"},
+    "interpretation": {"const": "summary_consistency_not_source_identity_or_authority"}
+  }
+}

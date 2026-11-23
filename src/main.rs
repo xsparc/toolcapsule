@@ -70,6 +70,8 @@ impl BundleIdentityGate {
 
 #[derive(Subcommand)]
 enum Command {
+    /// Print the closed bundle and export verification response schema.
+    ConfigurationBundleVerificationSchema,
     /// Print the closed summary bundle identity schema.
     ConfigurationBundleIdentitySchema,
     /// Print or exclusively export normalized bundle identity.
@@ -481,6 +483,9 @@ fn json_error(kind: &str, code: &str) {
 
 async fn execute(cli: Cli) -> Result<u8, Error> {
     match cli.command {
+        Command::ConfigurationBundleVerificationSchema => {
+            print_json(&bundle_verification::schema())?
+        }
         Command::ConfigurationBundleIdentitySchema => print_json(&bundle_identity::schema())?,
         Command::ConfigurationBundleIdentity { report, out } => {
             let raw = read_file(&report, configuration_bundle::MAX_BUNDLE_BYTES)?;
