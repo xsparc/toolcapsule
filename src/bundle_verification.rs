@@ -32,12 +32,22 @@ pub struct VerificationResponse {
     pub identity_checked: bool,
 }
 
-/// Reject missing, duplicate or unknown fields and unsupported response claims.
+/// Require a JSON object with known, unique fields and supported claims.
 ///
 /// This does not check a bundle, export, signature, or independently held source.
 pub fn read_response(raw: &[u8]) -> Result<VerificationResponse, Error> {
     if raw.len() > MAX_RESPONSE_BYTES {
         return Err(Error::InputLimit);
+    }
+    // Serde also accepts positional arrays for derived structs. Require the
+    // schema's object form, then decode the original bytes to reject duplicates.
+    if raw
+        .iter()
+        .copied()
+        .find(|b| !matches!(b, b' ' | b'\t' | b'\n' | b'\r'))
+        != Some(b'{')
+    {
+        return Err(Error::Format);
     }
     let response: WireResponse = serde_json::from_slice(raw).map_err(|_| Error::Format)?;
     if response.schema_version != 1

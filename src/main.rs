@@ -72,6 +72,8 @@ impl BundleIdentityGate {
 enum Command {
     /// Print the closed bundle and export verification response schema.
     ConfigurationBundleVerificationSchema,
+    /// Check a saved response's format without verifying any referenced evidence.
+    ConfigurationBundleVerificationCheck { response: PathBuf },
     /// Print the closed summary bundle identity schema.
     ConfigurationBundleIdentitySchema,
     /// Print or exclusively export normalized bundle identity.
@@ -426,6 +428,9 @@ fn print_json(value: &impl serde::Serialize) -> Result<(), Error> {
 async fn main() -> std::process::ExitCode {
     let cli = Cli::parse();
     let diagnostic = match &cli.command {
+        Command::ConfigurationBundleVerificationCheck { .. } => {
+            Some("configuration_bundle_verification_response")
+        }
         Command::ConfigurationBundleIdentity { .. }
         | Command::ConfigurationBundleRender { .. }
         | Command::ConfigurationBundleVerifyExport { .. }
@@ -485,6 +490,15 @@ async fn execute(cli: Cli) -> Result<u8, Error> {
     match cli.command {
         Command::ConfigurationBundleVerificationSchema => {
             print_json(&bundle_verification::schema())?
+        }
+        Command::ConfigurationBundleVerificationCheck { response } => {
+            let raw = read_file(&response, bundle_verification::MAX_RESPONSE_BYTES)?;
+            bundle_verification::read_response(&raw)?;
+            print_json(&serde_json::json!({
+                "schema_version": 1,
+                "valid": true,
+                "interpretation": "verification_response_validity_only"
+            }))?;
         }
         Command::ConfigurationBundleIdentitySchema => print_json(&bundle_identity::schema())?,
         Command::ConfigurationBundleIdentity { report, out } => {
