@@ -357,3 +357,68 @@ fn verification_response_reader_is_closed_and_bounded() {
         schema,
     );
 }
+
+#[test]
+fn cli_checks_saved_response_format_without_echoing_evidence() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("private-fixture-response.json");
+    let check = || {
+        std::process::Command::new(env!("CARGO_BIN_EXE_toolcapsule"))
+            .arg("configuration-bundle-verification-check")
+            .arg(&path)
+            .output()
+            .unwrap()
+    };
+    let interpretation = "summary_consistency_not_source_identity_or_authority";
+    let record = json!({
+        "schema_version": 1,
+        "kind": "configuration_bundle",
+        "verified": true,
+        "source_checked": true,
+        "identity_checked": true,
+        "interpretation": interpretation
+    });
+    let mut valid = format!(" \n\r\t{record}").into_bytes();
+    valid.resize(MAX_RESPONSE_BYTES, b' ');
+    std::fs::write(&path, &valid).unwrap();
+    let result = check();
+    assert_eq!(result.status.code(), Some(0));
+    assert!(result.stderr.is_empty());
+    assert_eq!(
+        serde_json::from_slice::<serde_json::Value>(&result.stdout).unwrap(),
+        json!({
+            "schema_version": 1,
+            "valid": true,
+            "interpretation": "verification_response_validity_only"
+        })
+    );
+    assert_eq!(std::fs::read(&path).unwrap(), valid);
+
+    let positional = json!([1, true, interpretation, "configuration_bundle", true, true]);
+    assert!(matches!(
+        read_response(&serde_json::to_vec(&positional).unwrap()),
+        Err(toolcapsule::Error::Format)
+    ));
+    let duplicate = format!("{{\"verified\":false,{}", &record.to_string()[1..]);
+    valid.push(b' ');
+    for invalid in [
+        serde_json::to_vec(&positional).unwrap(),
+        duplicate.into_bytes(),
+        br#"{"unknown":"private-fixture-value"}"#.to_vec(),
+        valid,
+    ] {
+        std::fs::write(&path, &invalid).unwrap();
+        let result = check();
+        assert_eq!(result.status.code(), Some(2));
+        assert!(result.stdout.is_empty());
+        assert_eq!(std::fs::read(&path).unwrap(), invalid);
+        let diagnostic: serde_json::Value = serde_json::from_slice(&result.stderr).unwrap();
+        assert_eq!(
+            diagnostic["kind"],
+            "configuration_bundle_verification_response"
+        );
+        assert_eq!(diagnostic.as_object().unwrap().len(), 3);
+        let stderr = String::from_utf8(result.stderr).unwrap();
+        assert!(!stderr.contains("private-fixture"));
+    }
+}

@@ -59,3 +59,19 @@ strict reader when validating the raw encoding, including duplicate keys
 and the integer version token. Older responses without scope are not valid
 under this closed contract. Parsing a response only checks its shape and
 claims; it does not repeat the checks or authenticate the producer.
+
+### Validate a saved response from the CLI
+
+Run `toolcapsule configuration-bundle-verification-check response.json` to
+validate a saved response's format offline. The command reads at most 4 KiB
+plus one byte to detect oversized input, never modifies the file, and prints
+a fixed success receipt:
+
+```json
+{"schema_version":1,"valid":true,"interpretation":"verification_response_validity_only"}
+```
+
+The reader requires a top-level JSON object and rejects arrays, including
+positional data. Invalid files exit 2 with a fixed-code diagnostic and no
+success receipt. A success receipt does not echo any response flags, verify
+a bundle or export, read independent evidence, or authorize execution.
