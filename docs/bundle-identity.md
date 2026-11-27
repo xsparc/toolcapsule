@@ -75,3 +75,19 @@ The reader requires a top-level JSON object and rejects arrays, including
 positional data. Invalid files exit 2 with a fixed-code diagnostic and no
 success receipt. A success receipt does not echo any response flags, verify
 a bundle or export, read independent evidence, or authorize execution.
+
+### Count format checks across a batch
+
+Run `toolcapsule configuration-bundle-verification-batch first.json second.json`
+to check 1–32 explicitly selected local response files. It does not scan
+directories and skips entries whose final path component is not a regular file
+at inspection time. Use it on stable, operator-controlled local paths. Each file uses the same 4 KiB read
+cap and strict parser as the single-file check. Repeated arguments count as
+separate inputs; the command does not deduplicate by path or content.
+
+The version-1 JSON report prints only aggregate counts: `format_valid`,
+`invalid_format`, `oversized`, `unreadable` and `total`. It does not emit file
+paths, response values, or scope flags. It exits 0 if all entries are valid
+and 2 if any are not. More than 32 paths are rejected before any are opened,
+with a fixed-code diagnostic and no report. This checks format only, not
+execution, authenticity, or independent evidence.
