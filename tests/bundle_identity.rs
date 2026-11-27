@@ -422,3 +422,102 @@ fn cli_checks_saved_response_format_without_echoing_evidence() {
         assert!(!stderr.contains("private-fixture"));
     }
 }
+
+#[test]
+fn cli_batch_counts_formats_without_echoing_files_or_flags() {
+    let d = tempfile::tempdir().unwrap();
+    let run = |args: &[&str]| {
+        std::process::Command::new(env!("CARGO_BIN_EXE_toolcapsule"))
+            .current_dir(d.path())
+            .arg("configuration-bundle-verification-batch")
+            .args(args)
+            .output()
+            .unwrap()
+    };
+    let valid = serde_json::to_vec(&json!({
+        "schema_version": 1,
+        "kind": "configuration_bundle_export",
+        "verified": true,
+        "source_checked": true,
+        "identity_checked": false,
+        "interpretation": "summary_consistency_not_source_identity_or_authority"
+    }))
+    .unwrap();
+    let malformed = br#"{"unknown":"synthetic-private-marker"}"#;
+    let oversized = vec![b' '; MAX_RESPONSE_BYTES + 1];
+    for (path, bytes) in [
+        ("private-valid", valid.as_slice()),
+        ("private-invalid", malformed.as_slice()),
+        ("private-large", oversized.as_slice()),
+    ] {
+        std::fs::write(d.path().join(path), bytes).unwrap();
+    }
+    std::fs::create_dir(d.path().join("private-dir")).unwrap();
+    let result = run(&[
+        "private-valid",
+        "private-invalid",
+        "private-large",
+        "private-missing",
+        "private-dir",
+        "private-valid",
+    ]);
+    assert_eq!(result.status.code(), Some(2));
+    assert!(result.stderr.is_empty());
+    assert_eq!(
+        serde_json::from_slice::<serde_json::Value>(&result.stdout).unwrap(),
+        json!({
+            "schema_version": 1,
+            "format_valid": 2,
+            "invalid_format": 1,
+            "oversized": 1,
+            "unreadable": 2,
+            "total": 6,
+            "interpretation": "verification_response_validity_counts_only"
+        })
+    );
+    assert_eq!(
+        std::fs::read(d.path().join("private-valid")).unwrap(),
+        valid
+    );
+    assert_eq!(
+        std::fs::read(d.path().join("private-invalid")).unwrap(),
+        malformed
+    );
+    assert_eq!(
+        std::fs::read(d.path().join("private-large")).unwrap(),
+        oversized
+    );
+    let limit = run(&["private-valid"; 32]);
+    assert_eq!(limit.status.code(), Some(0));
+    assert!(limit.stderr.is_empty());
+    let report: serde_json::Value = serde_json::from_slice(&limit.stdout).unwrap();
+    assert_eq!(report["format_valid"], 32);
+    assert_eq!(report["total"], 32);
+    let above_limit = run(&["private-missing"; 33]);
+    assert_eq!(above_limit.status.code(), Some(2));
+    assert!(above_limit.stdout.is_empty());
+    let diagnostic: serde_json::Value = serde_json::from_slice(&above_limit.stderr).unwrap();
+    assert_eq!(diagnostic["error"], "input_too_large");
+    assert!(
+        !String::from_utf8(above_limit.stderr)
+            .unwrap()
+            .contains("private-")
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn cli_batch_does_not_read_final_symlink() {
+    let d = tempfile::tempdir().unwrap();
+    std::fs::write(d.path().join("another-record"), b"{}").unwrap();
+    std::os::unix::fs::symlink("another-record", d.path().join("selected-link")).unwrap();
+    let output = std::process::Command::new(env!("CARGO_BIN_EXE_toolcapsule"))
+        .current_dir(d.path())
+        .args(["configuration-bundle-verification-batch", "selected-link"])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(2));
+    let counts: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(counts["unreadable"], 1);
+    assert_eq!(counts["invalid_format"], 0);
+}

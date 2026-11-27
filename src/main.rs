@@ -74,6 +74,11 @@ enum Command {
     ConfigurationBundleVerificationSchema,
     /// Check a saved response's format without verifying any referenced evidence.
     ConfigurationBundleVerificationCheck { response: PathBuf },
+    /// Count the format status of up to 32 explicitly selected saved responses.
+    ConfigurationBundleVerificationBatch {
+        #[arg(required = true, num_args = 1..)]
+        responses: Vec<PathBuf>,
+    },
     /// Print the closed summary bundle identity schema.
     ConfigurationBundleIdentitySchema,
     /// Print or exclusively export normalized bundle identity.
@@ -428,7 +433,8 @@ fn print_json(value: &impl serde::Serialize) -> Result<(), Error> {
 async fn main() -> std::process::ExitCode {
     let cli = Cli::parse();
     let diagnostic = match &cli.command {
-        Command::ConfigurationBundleVerificationCheck { .. } => {
+        Command::ConfigurationBundleVerificationCheck { .. }
+        | Command::ConfigurationBundleVerificationBatch { .. } => {
             Some("configuration_bundle_verification_response")
         }
         Command::ConfigurationBundleIdentity { .. }
@@ -499,6 +505,44 @@ async fn execute(cli: Cli) -> Result<u8, Error> {
                 "valid": true,
                 "interpretation": "verification_response_validity_only"
             }))?;
+        }
+        Command::ConfigurationBundleVerificationBatch { responses } => {
+            if responses.len() > 32 {
+                return Err(Error::InputLimit);
+            }
+            let mut format_valid = 0;
+            let mut invalid_format = 0;
+            let mut oversized = 0;
+            let mut unreadable = 0;
+            for path in &responses {
+                // Do not intentionally open directories, devices, FIFOs or final symlinks.
+                if !std::fs::symlink_metadata(path).is_ok_and(|m| m.is_file()) {
+                    unreadable += 1;
+                    continue;
+                }
+                match read_file(path, bundle_verification::MAX_RESPONSE_BYTES)
+                    .and_then(|bytes| bundle_verification::read_response(&bytes))
+                {
+                    Ok(_) => format_valid += 1,
+                    Err(Error::InputLimit) => oversized += 1,
+                    Err(Error::Format) => invalid_format += 1,
+                    Err(_) => unreadable += 1,
+                }
+            }
+            print_json(&serde_json::json!({
+                "schema_version": 1,
+                "format_valid": format_valid,
+                "invalid_format": invalid_format,
+                "oversized": oversized,
+                "unreadable": unreadable,
+                "total": responses.len(),
+                "interpretation": "verification_response_validity_counts_only"
+            }))?;
+            return Ok(if format_valid == responses.len() {
+                0
+            } else {
+                2
+            });
         }
         Command::ConfigurationBundleIdentitySchema => print_json(&bundle_identity::schema())?,
         Command::ConfigurationBundleIdentity { report, out } => {
