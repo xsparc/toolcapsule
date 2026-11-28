@@ -521,3 +521,99 @@ fn cli_batch_does_not_read_final_symlink() {
     assert_eq!(counts["unreadable"], 1);
     assert_eq!(counts["invalid_format"], 0);
 }
+
+#[test]
+fn cli_checks_generated_batch_receipts_without_rechecking_inputs() {
+    let d = tempfile::tempdir().unwrap();
+    let run = |args: &[&str]| {
+        std::process::Command::new(env!("CARGO_BIN_EXE_toolcapsule"))
+            .current_dir(d.path())
+            .args(args)
+            .output()
+            .unwrap()
+    };
+    std::fs::write(d.path().join("synthetic-invalid"), b"{}").unwrap();
+    let batch = run(&[
+        "configuration-bundle-verification-batch",
+        "synthetic-invalid",
+        "synthetic-missing",
+    ]);
+    assert_eq!(batch.status.code(), Some(2));
+    let valid: serde_json::Value = serde_json::from_slice(&batch.stdout).unwrap();
+    assert_eq!(valid["format_valid"], 0);
+    assert_eq!(valid["total"], 2);
+    std::fs::remove_file(d.path().join("synthetic-invalid")).unwrap();
+    let path = d.path().join("synthetic-private-receipt");
+    let check = || {
+        run(&[
+            "configuration-bundle-verification-batch-check",
+            "synthetic-private-receipt",
+        ])
+    };
+    std::fs::write(&path, &batch.stdout).unwrap();
+    let ok = check();
+    assert_eq!(ok.status.code(), Some(0));
+    assert!(ok.stderr.is_empty());
+    assert_eq!(
+        serde_json::from_slice::<serde_json::Value>(&ok.stdout).unwrap(),
+        json!({"schema_version":1,"valid":true,"interpretation":"verification_batch_receipt_validity_only"})
+    );
+    assert_eq!(std::fs::read(&path).unwrap(), batch.stdout);
+
+    let schema = run(&["configuration-bundle-verification-batch-schema"]);
+    assert_eq!(schema.status.code(), Some(0));
+    let schema: serde_json::Value = serde_json::from_slice(&schema.stdout).unwrap();
+    assert_eq!(schema, bundle_verification::batch_schema());
+    assert_eq!(schema["additionalProperties"], false);
+    assert_eq!(
+        schema["properties"]["total"]["maximum"],
+        bundle_verification::MAX_BATCH_RESPONSES
+    );
+    let required = schema["required"].as_array().unwrap();
+    assert_eq!(required.len(), valid.as_object().unwrap().len());
+    assert!(
+        valid
+            .as_object()
+            .unwrap()
+            .keys()
+            .all(|key| required.contains(&json!(key)))
+    );
+
+    for (field, value) in [
+        ("total", json!(3)),
+        ("total", json!(0)),
+        ("total", json!(33)),
+        ("schema_version", json!(2)),
+        ("invalid_format", json!(true)),
+        ("unreadable", json!(1.0)),
+        ("authority", json!("synthetic-private-value")),
+    ] {
+        let mut wrong = valid.clone();
+        wrong[field] = value;
+        let bytes = serde_json::to_vec(&wrong).unwrap();
+        std::fs::write(&path, &bytes).unwrap();
+        let bad = check();
+        assert_eq!(bad.status.code(), Some(2), "{field}");
+        assert!(bad.stdout.is_empty(), "{field}");
+        assert!(
+            !String::from_utf8(bad.stderr)
+                .unwrap()
+                .contains("synthetic-private")
+        );
+        assert_eq!(std::fs::read(&path).unwrap(), bytes);
+    }
+    let mut missing = valid.clone();
+    missing.as_object_mut().unwrap().remove("unreadable");
+    let duplicate = format!("{{\"total\":2,{}", &valid.to_string()[1..]);
+    for bytes in [
+        serde_json::to_vec(&missing).unwrap(),
+        duplicate.into_bytes(),
+        b"[]".to_vec(),
+        vec![b' '; MAX_RESPONSE_BYTES + 1],
+    ] {
+        std::fs::write(&path, bytes).unwrap();
+        let bad = check();
+        assert_eq!(bad.status.code(), Some(2));
+        assert!(bad.stdout.is_empty());
+    }
+}

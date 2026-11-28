@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ToolCapsule batch verification response format counts",
+  "description": "Counts only; no verification evidence. The application additionally requires category counts to sum to total.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "format_valid", "invalid_format", "oversized", "unreadable", "total", "interpretation"],
+  "properties": {
+    "schema_version": {"type": "integer", "const": 1},
+    "format_valid": {"$ref": "#/$defs/count"},
+    "invalid_format": {"$ref": "#/$defs/count"},
+    "oversized": {"$ref": "#/$defs/count"},
+    "unreadable": {"$ref": "#/$defs/count"},
+    "total": {"type": "integer", "minimum": 1, "maximum": 32},
+    "interpretation": {"const": "verification_response_validity_counts_only"}
+  },
+  "$defs": {
+    "count": {"type": "integer", "minimum": 0, "maximum": 32}
+  }
+}

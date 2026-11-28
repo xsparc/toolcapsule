@@ -91,3 +91,18 @@ paths, response values, or scope flags. It exits 0 if all entries are valid
 and 2 if any are not. More than 32 paths are rejected before any are opened,
 with a fixed-code diagnostic and no report. This checks format only, not
 execution, authenticity, or independent evidence.
+
+### Consume a saved batch report
+
+`toolcapsule configuration-bundle-verification-batch-schema` prints the
+[version-1 counts schema](../schemas/configuration-bundle-verification-batch.schema.json).
+For a saved report, run
+`toolcapsule configuration-bundle-verification-batch-check counts.json`.
+The offline check applies the 4 KiB cap, rejects duplicate keys and invalid
+encodings, and enforces that the four category counts sum exactly to `total`.
+This arithmetic constraint is not expressed by the JSON Schema alone.
+
+A valid report exits 0 and prints a fixed `verification_batch_receipt_validity_only`
+receipt, even if it records invalid entries. A malformed report exits 2 with a
+fixed-code error and no success receipt. The checker does not echo counts or
+input paths, rerun any checks, or authenticate the supplied report.

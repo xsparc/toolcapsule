@@ -43,3 +43,21 @@ Post-fix validation on 2026-10-17: all 16 tests passed, formatting and Clippy
 with warnings denied passed, and static/current-date strict governance checks
 passed. The refreshed locked-dependency RustSec audit reported no advisories.
 Hosted validation for this correction is tracked by PR #3.
+
+## Bundle response and batch receipt review, 2026-11-28
+
+Reviewed the merged bundle schema and Rust reader, single-file format check,
+and bounded batch format report against their CLI regressions and the documented
+evidence boundary. Raw response parsing rejects malformed structures and
+unsupported claims; the single and batch format checks do not repeat artifact
+verification. The new saved-receipt checker separately enforces count
+consistency and emits no paths, input data, or authentication claims.
+
+The evidence-index structural and reference check passed for the existing one
+objective, 28 requirements, and 30 work items; the new batch-receipt trace is
+recorded explicitly. This is an index/reference review plus focused bundle
+acceptance and 92 local Rust tests with a real WASI fixture, not a
+new security review of the dependency graph or hosted runtime. The current
+engine pin and its separate maintenance work are unchanged; local validation
+does not establish cross-platform CI, deployment, or independent attestation.
+The follow-up date retains the existing monthly review cadence.

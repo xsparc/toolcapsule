@@ -191,3 +191,11 @@ Verification: `docs/governance/bundle-review-validation.md`. Next five tasks: `d
 
 Implemented `docs/decisions/0026-bundle-identity.md`. Workflow: `docs/bundle-identity.md`.
 Evidence: `docs/governance/bundle-identity-validation.md`. Next five tasks: `docs/next-milestone.md`.
+
+## Batch verification receipt contract
+
+The batch CLI emits format counts only. The saved-report schema and offline
+checker make that receipt usable by other tools without equating successful
+parsing with verification of package, source, identity, or export evidence.
+An acceptance regression passes actual batch output to the checker and
+covers malformed records, inconsistent totals, and output non-disclosure.

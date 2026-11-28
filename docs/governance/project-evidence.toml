@@ -34,8 +34,8 @@ source_priority = ["docs/architecture.md", "docs/roadmap.md", "docs/decisions/",
 dhf_is_authoritative = false
 
 [review]
-last_reviewed = "2026-10-26"
-review_due = "2026-11-26"
+last_reviewed = "2026-11-28"
+review_due = "2026-12-28"
 
 [[objectives]]
 id = "OBJ-SAFE-TOOLS"
@@ -795,3 +795,25 @@ roadmap_refs = ["docs/roadmap.md"]
 approval_ref = "conversation:2026-11-18-next-autonomous-milestone-and-draft-prs"
 acceptance_refs = ["docs/decisions/0026-bundle-identity.md"]
 evidence_refs = ["tests/bundle_identity.rs", "tests/portable_bundle_review.rs", "docs/governance/bundle-identity-validation.md"]
+
+[[requirements]]
+id = "REQ-BUNDLE-BATCH-RECEIPT"
+statement = "Provide an offline versioned counts-receipt contract without granting verification authority."
+status = "implemented"
+objective_ids = ["OBJ-SAFE-TOOLS"]
+roadmap_refs = ["docs/roadmap.md"]
+design_refs = ["docs/bundle-identity.md"]
+risk_refs = ["docs/bundle-identity.md"]
+implementation_refs = ["src/bundle_verification.rs", "src/main.rs", "schemas/configuration-bundle-verification-batch.schema.json"]
+verification_refs = ["tests/bundle_identity.rs"]
+validation_refs = ["docs/governance/verification.md"]
+
+[[work_items]]
+id = "BUNDLE-BATCH-RECEIPT"
+title = "Validate saved batch counts receipts"
+status = "closed"
+requirement_ids = ["REQ-BUNDLE-BATCH-RECEIPT"]
+roadmap_refs = ["docs/roadmap.md"]
+approval_ref = "conversation:2026-11-28-open-source-feature-prs"
+acceptance_refs = ["docs/bundle-identity.md"]
+evidence_refs = ["tests/bundle_identity.rs", "docs/governance/verification.md"]
