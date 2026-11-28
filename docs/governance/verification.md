@@ -56,7 +56,7 @@ consistency and emits no paths, input data, or authentication claims.
 The evidence-index structural and reference check passed for the existing one
 objective, 28 requirements, and 30 work items; the new batch-receipt trace is
 recorded explicitly. This is an index/reference review plus focused bundle
-acceptance and 92 local Rust tests with a real WASI fixture, not a
+acceptance and 93 local Rust tests with a real WASI fixture, not a
 new security review of the dependency graph or hosted runtime. The current
 engine pin and its separate maintenance work are unchanged; local validation
 does not establish cross-platform CI, deployment, or independent attestation.

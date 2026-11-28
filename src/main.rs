@@ -517,6 +517,10 @@ async fn execute(cli: Cli) -> Result<u8, Error> {
             print_json(&bundle_verification::batch_schema())?;
         }
         Command::ConfigurationBundleVerificationBatchCheck { receipt } => {
+            // As with batch inputs, require a regular final component before opening.
+            if !std::fs::symlink_metadata(&receipt).is_ok_and(|m| m.is_file()) {
+                return Err(Error::Io);
+            }
             let raw = read_file(&receipt, bundle_verification::MAX_RESPONSE_BYTES)?;
             bundle_verification::check_batch_receipt(&raw)?;
             print_json(&serde_json::json!({

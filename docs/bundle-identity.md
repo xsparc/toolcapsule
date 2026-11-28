@@ -100,7 +100,9 @@ For a saved report, run
 `toolcapsule configuration-bundle-verification-batch-check counts.json`.
 The offline check applies the 4 KiB cap, rejects duplicate keys and invalid
 encodings, and enforces that the four category counts sum exactly to `total`.
-This arithmetic constraint is not expressed by the JSON Schema alone.
+This arithmetic constraint is not expressed by the JSON Schema alone. As with
+batch inputs, use a stable operator-controlled local path whose final component
+is a regular file.
 
 A valid report exits 0 and prints a fixed `verification_batch_receipt_validity_only`
 receipt, even if it records invalid entries. A malformed report exits 2 with a

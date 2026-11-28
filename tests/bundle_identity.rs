@@ -617,3 +617,34 @@ fn cli_checks_generated_batch_receipts_without_rechecking_inputs() {
         assert!(bad.stdout.is_empty());
     }
 }
+
+#[test]
+fn cli_batch_check_rejects_nonregular_receipt_path() {
+    let d = tempfile::tempdir().unwrap();
+    std::fs::create_dir(d.path().join("directory-receipt")).unwrap();
+    let mut invalid = vec!["directory-receipt"];
+    #[cfg(unix)]
+    {
+        std::fs::write(d.path().join("receipt-data"), b"{}").unwrap();
+        std::os::unix::fs::symlink("receipt-data", d.path().join("symlink-receipt")).unwrap();
+        invalid.push("symlink-receipt");
+    }
+    for name in invalid.drain(..) {
+        let output = std::process::Command::new(env!("CARGO_BIN_EXE_toolcapsule"))
+            .current_dir(d.path())
+            .args(["configuration-bundle-verification-batch-check", name])
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(2));
+        assert!(output.stdout.is_empty());
+        let diagnostic: serde_json::Value = serde_json::from_slice(&output.stderr).unwrap();
+        assert_eq!(
+            diagnostic,
+            json!({
+                "schema_version":1,
+                "kind":"configuration_bundle_verification_batch_receipt",
+                "error":"io_error"
+            })
+        );
+    }
+}
