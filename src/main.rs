@@ -74,6 +74,10 @@ enum Command {
     ConfigurationBundleVerificationSchema,
     /// Check a saved response's format without verifying any referenced evidence.
     ConfigurationBundleVerificationCheck { response: PathBuf },
+    /// Print the JSON Schema for batch verification format counts.
+    ConfigurationBundleVerificationBatchSchema,
+    /// Check a saved batch receipt's shape and total, not its evidence.
+    ConfigurationBundleVerificationBatchCheck { receipt: PathBuf },
     /// Count the format status of up to 32 explicitly selected saved responses.
     ConfigurationBundleVerificationBatch {
         #[arg(required = true, num_args = 1..)]
@@ -433,6 +437,9 @@ fn print_json(value: &impl serde::Serialize) -> Result<(), Error> {
 async fn main() -> std::process::ExitCode {
     let cli = Cli::parse();
     let diagnostic = match &cli.command {
+        Command::ConfigurationBundleVerificationBatchCheck { .. } => {
+            Some("configuration_bundle_verification_batch_receipt")
+        }
         Command::ConfigurationBundleVerificationCheck { .. }
         | Command::ConfigurationBundleVerificationBatch { .. } => {
             Some("configuration_bundle_verification_response")
@@ -506,8 +513,24 @@ async fn execute(cli: Cli) -> Result<u8, Error> {
                 "interpretation": "verification_response_validity_only"
             }))?;
         }
+        Command::ConfigurationBundleVerificationBatchSchema => {
+            print_json(&bundle_verification::batch_schema())?;
+        }
+        Command::ConfigurationBundleVerificationBatchCheck { receipt } => {
+            // As with batch inputs, require a regular final component before opening.
+            if !std::fs::symlink_metadata(&receipt).is_ok_and(|m| m.is_file()) {
+                return Err(Error::Io);
+            }
+            let raw = read_file(&receipt, bundle_verification::MAX_RESPONSE_BYTES)?;
+            bundle_verification::check_batch_receipt(&raw)?;
+            print_json(&serde_json::json!({
+                "schema_version": 1,
+                "valid": true,
+                "interpretation": "verification_batch_receipt_validity_only"
+            }))?;
+        }
         Command::ConfigurationBundleVerificationBatch { responses } => {
-            if responses.len() > 32 {
+            if responses.len() > bundle_verification::MAX_BATCH_RESPONSES {
                 return Err(Error::InputLimit);
             }
             let mut format_valid = 0;
@@ -536,7 +559,7 @@ async fn execute(cli: Cli) -> Result<u8, Error> {
                 "oversized": oversized,
                 "unreadable": unreadable,
                 "total": responses.len(),
-                "interpretation": "verification_response_validity_counts_only"
+                "interpretation": bundle_verification::BATCH_INTERPRETATION
             }))?;
             return Ok(if format_valid == responses.len() {
                 0
